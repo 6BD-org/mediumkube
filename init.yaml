@@ -2,9 +2,6 @@
 # Setup identical ssh key for host machine
 
 
-http_proxy: http://172.16.205.170:1091
-https_proxy: http://172.16.205.170:1091
-
 ssh_authorized_keys:
   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCuoaixAjqO3+rUh7vcsftW5x+vcK/aHKdLglsLJ8NeC16gFQVnOSEPzn8nLx2vGxovHy1Hdw1BaD0wditGgldVsv9HrNwIFpYj4Q1zgk6HKy9k72uM6FKdhb4JhEAul/QW+vE2ssxtOKH6DbjLle91FrX0fBlWL5RbQQtOd0pJST47XFEdB76Ovb/LAkhntJO1l//Gz3/K1zXSKGog/Cz5tiD58a/I13DiF1QcMUn+6qzaUEyotfpQmqCvEssnBJQvUhs6DYJksHj9SzMrrzfJ3iDZoSSS2VJklVcIvxgNXTi5iae72gVq7YgLX3crkDikIurf7WoIzkkC9kNEXVEa3e+RIPunJ+iRBf5G8VlyZLS7bz4J/zeYiSno4GvpnLsEondbLXEb8+rLHx7f7UAEur/pDUtjTEKN/XqD3fb/7Zm9c5w/gX7g8liGhkoVi61awXkvsDpYFlXgXs3vZr2d0gcX2T4uYNzPNdgdl4vcKpvVzRRFYKgJxZ+pu+AsN5k= transwarp@transwarp-Latitude-5480
   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDQ7I1r3MSUVBPu0XvgUDhAZaLZfXhyGOi22fMPDuaF3GvU76mI9+exH/zAhZyfnBOCSN6K21iNAghPvO/epaI7ZEMm4tuvEi/M5NRqWOtxNPZzf7kuzZhxtHAyLcKspZEHr2XalG5ZL0Rkt1FaJQT2zUtwQMa4++drwPD7+074gtN/O50RhUhDDlJQcYquqQXk5FbFvGpaUD5obJ6dl23b8C9EvuQqt62Xw2x6Swm+zbo6Ode6FwfDP6Mt57bfcIC7FYboKNVh+N29LPyMBHYTGdaB+tK0nF6Q1TS0IWu9u/xArGRcOH0O8fi/i5P9Ek8dRdLazNuqMkWFY0wxfmSd transwarp@transwarp-Latitude-5480
@@ -55,6 +52,8 @@ ssh_keys:
 
 # Set up software sources
 apt:
+  http_proxy: http://172.16.184.20:1091
+  https_proxy: http://172.16.184.20:1091
   primary:
     - arches: [default]
       uri: http://mirrors.tuna.tsinghua.edu.cn/ubuntu/
@@ -62,6 +61,7 @@ package_update: true
 packages:
   - apt-transport-https
   - curl
+  - net-tools
 
 write_files:
   - content: |
@@ -86,6 +86,12 @@ write_files:
   
   - content: |
       #!/bin/bash
+      
+      # If you need proxy to install kubernetes
+      # Set following variables
+      export http_proxy=http://172.16.184.20:1091
+      export https_proxy=http://172.16.184.20:1091
+      
       curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
       deb https://apt.kubernetes.io/ kubernetes-xenial main
@@ -96,7 +102,16 @@ write_files:
     path: /run/bootstrap/init_kube.sh
     permissions: '0777'
 
+  - content: |
+    #!/bin/bash
+    path: /run/bootstrap/init.sh
+
+  - content: |
+    #!/bin/bash
+    path: /run/bootstrap/join.sh
+
 runcmd:
+  - mkdir -p /var/log/bootstrap
   - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh
-  - /run/bootstrap/init_network.sh
-  - /run/bootstrap/init_kube.sh
+  - sh /run/bootstrap/init_network.sh >> /var/log/bootstrap/init_network.log
+  - sh /run/bootstrap/init_kube.sh >> /var/log/bootstrap/init_kubeadm.log
