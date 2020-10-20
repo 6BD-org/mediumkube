@@ -109,6 +109,15 @@ $ ./purge.sh {instance_name}
 $ kubeadm init --ignore-preflight-errors=all
 ```
 
+### Logging
+
+To check the log of multipass,
+
+```bash
+
+journalctl --unit snap.multipass*
+
+```
 
 ## Roadmap
 
