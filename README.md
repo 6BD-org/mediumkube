@@ -38,6 +38,29 @@ In order to use configuration instead of writing proxies everywhere, use
 {{ .HttpProxy }} and {{ .HttpsProxy }}
 ```
 
+Also be careful when processing data sensitive fields like private key. Using go template might introduce one `newline` to template file, so remember to trim. 
+
+```yaml
+privKey: |
+    {{ .PrivKey | nindent 6 }}
+```
+For example this is translated to 
+
+```yaml
+privKey: |
+# Note there's a newline below, thus the key is incorrect
+
+    -----BEGIN RSA PRIVATE KEY-----
+    asdasdasdasdasdasd....
+```
+
+Instead you do this
+
+```yaml
+privKey: |
+    {{- PrivKey | nindent 6 }}
+```
+
 in your `yaml.tmpl` file, and render it using that simple go program
 
 ```bash
