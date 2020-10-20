@@ -17,9 +17,10 @@ func check(e error) {
 	}
 }
 
+// TemplateConfig this is parsed from config yaml
 type TemplateConfig struct {
-	HttpsProxy string `yaml:"https-proxy,omitempty"`
-	HttpProxy  string `yaml:"http-proxy,omitempty"`
+	HTTPSProxy string `yaml:"https-proxy,omitempty"`
+	HTTPProxy  string `yaml:"http-proxy,omitempty"`
 }
 
 func parseConfig(configPath string) TemplateConfig {
@@ -44,8 +45,8 @@ func readTemplate(templatePath string) string {
 
 func testMarshal() {
 	config := TemplateConfig{
-		HttpProxy:  "http",
-		HttpsProxy: "https",
+		HTTPProxy:  "http",
+		HTTPSProxy: "https",
 	}
 	data, _ := yaml.Marshal(config)
 	fmt.Print(string(data))

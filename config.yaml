@@ -1,3 +1,2 @@
 http-proxy: "172.16.184.20:1091"
 https-proxy: "172.16.184.20:1091"
-carry: "test"

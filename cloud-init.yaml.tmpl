@@ -52,8 +52,8 @@ ssh_keys:
 
 # Set up software sources
 apt:
-  http_proxy: {{ .HttpProxy }}
-  https_proxy: {{ .HttpsProxy }}
+  http_proxy: {{ .HTTPProxy }}
+  https_proxy: {{ .HTTPSProxy }}
   primary:
     - arches: [default]
       uri: http://mirrors.tuna.tsinghua.edu.cn/ubuntu/
@@ -89,8 +89,8 @@ write_files:
       
       # If you need proxy to install kubernetes
       # Set following variables
-      export http_proxy={{ .HttpProxy }}
-      export https_proxy={{ .HttpsProxy }}
+      export http_proxy={{ .HTTPProxy }}
+      export https_proxy={{ .HTTPSProxy }}
       
       curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list

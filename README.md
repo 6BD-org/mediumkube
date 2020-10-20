@@ -10,10 +10,47 @@ $ sudo apt install multipass
 
 ```
 
+
+### Build & render
+
+In order to simplify the configuration, we support configuration
+and template rendering
+
+there are pre-build options which are proxies. 
+
+```yaml
+http-proxy: "172.16.184.20:1091"
+https-proxy: "172.16.184.20:1091"
+```
+
+In order to use configuration instead of writing proxies everywhere, use 
+
+```
+{{ .HttpProxy }} and {{ .HttpsProxy }}
+```
+
+in your `yaml.tmpl` file, and render it using that simple go program
+
+```bash
+
+$ go build -o main main.go
+
+$ ./main
+
+```
+
+
 ### Launch instance
 
 ```bash
-$ multipass launch -v -n node01 --cloud-init init.yaml file://{path_to_image}
+
+# -c 2 uses 2 cpus
+# -m 2G 2G memory
+# -d 20G 20G disk
+# -n node01 node named node01
+# file path to .img file
+
+$ multipass launch -v -n node01 --cloud-init cloud-init.yaml -c 2 -m 2G -d 20G file://{path_to_image}
 ```
 
 ### purge instance
@@ -24,17 +61,18 @@ $ ./purge.sh {instance_name}
 ```
 
 
-### Build
 
-```bash
 
-$ go build -o main main.go
+### Start K8s cluster
+
+
 ```
+# We normally don't have enough resource
+# for launching cluster so add this 
+# flag
+# --ignore-preflight-errors=all
 
-### Render the template
 
-```bash
-
-./main
-
+# To start a master node, do this on node01
+$ kubeadm init --ignore-preflight-errors=all
 ```
