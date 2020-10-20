@@ -85,3 +85,10 @@ $ ./purge.sh {instance_name}
 # To start a master node, do this on node01
 $ kubeadm init --ignore-preflight-errors=all
 ```
+
+
+## Roadmap
+
+- Setup flannel network
+- Automatic cluster set up
+- Better templat engine
