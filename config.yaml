@@ -1,2 +1,6 @@
 http-proxy: "172.16.184.20:1091"
 https-proxy: "172.16.184.20:1091"
+
+pub-key-dir: "/home/temp/.ssh/cloud.pub"
+priv-key-dir: "/home/temp/.ssh/cloud"
+host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
