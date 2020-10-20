@@ -1,5 +1,14 @@
 # Setup a k8s cluster using multipass
 
+This is a very simple toolkit that helps setup a K8s cluster easily (In order to learn some network knowledges about K8s)
+
++ Easy to use
+- Unconfigurable networks
+- Very simple templating
+- Still need to init and join nodes manually
+- No distributed deployment
+- Like a minikube, but you'll have "real nodes" to access to. If you got the effort, you can config them for advanced uses
+
 ## Prepare
 
 ### Install multipass
