@@ -22,3 +22,19 @@ $ multipass launch -v -n node01 --cloud-init init.yaml file://{path_to_image}
 
 $ ./purge.sh {instance_name}
 ```
+
+
+### Build
+
+```bash
+
+$ go build -o main main.go
+```
+
+### Render the template
+
+```bash
+
+./main
+
+```

@@ -52,8 +52,8 @@ ssh_keys:
 
 # Set up software sources
 apt:
-  http_proxy: http://172.16.184.20:1091
-  https_proxy: http://172.16.184.20:1091
+  http_proxy: 172.16.184.20:1091
+  https_proxy: 172.16.184.20:1091
   primary:
     - arches: [default]
       uri: http://mirrors.tuna.tsinghua.edu.cn/ubuntu/
@@ -89,8 +89,8 @@ write_files:
       
       # If you need proxy to install kubernetes
       # Set following variables
-      export http_proxy=http://172.16.184.20:1091
-      export https_proxy=http://172.16.184.20:1091
+      export http_proxy=172.16.184.20:1091
+      export https_proxy=172.16.184.20:1091
       
       curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
@@ -102,12 +102,17 @@ write_files:
     path: /run/bootstrap/init_kube.sh
     permissions: '0777'
 
+
+  # Init master node
   - content: |
-    #!/bin/bash
+      #!/bin/bash
+      kubeadm init
+
     path: /run/bootstrap/init.sh
 
+  # Join master node
   - content: |
-    #!/bin/bash
+      #!/bin/bash
     path: /run/bootstrap/join.sh
 
 runcmd:
