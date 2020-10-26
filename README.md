@@ -96,6 +96,13 @@ $ ./main render help
 $ multipass launch -v -n node01 --cloud-init cloud-init.yaml -c 2 -m 2G -d 20G file:///home/temp/u_20.04.img
 ```
 
+A better way of launching instance is via cli
+
+```bash
+
+$ ./main deploy --config ./cloud-init.yaml
+```
+
 ### purge instance
 
 ```bash
@@ -131,7 +138,11 @@ journalctl --unit snap.multipass*
 ```
 
 ## Roadmap
+- Cli tool for cluster management
+  - Cluster deployment
+  - Deletion
+  - Adding/Removing nodes
+  - Deploy kubernetes resources
 
 - Setup flannel network
-- Automatic cluster set up
-- Better templat engine
+- Better template engine

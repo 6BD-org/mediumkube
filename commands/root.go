@@ -29,6 +29,8 @@ func (handler RootHandler) Handle(args []string) {
 		switch args[1] {
 		case "render":
 			CMD["render"].Handle(args[1:])
+		case "deploy":
+			CMD["deploy"].Handle(args[1:])
 		case "help":
 			handler.Help()
 		default:

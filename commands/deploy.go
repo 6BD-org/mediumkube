@@ -3,6 +3,7 @@ package commands
 import (
 	"flag"
 	"mediumkube/common"
+	"mediumkube/services"
 	"mediumkube/utils"
 
 	"gopkg.in/yaml.v3"
@@ -17,12 +18,20 @@ func (handler DeployHandler) Desc() string {
 }
 
 func (handler DeployHandler) Help() {
+	handler.flagset.Usage()
 
 }
 
 func (handler DeployHandler) Handle(args []string) {
+
 	configPath := handler.flagset.String("config", "./config.yaml", "Config yaml for deployment")
 	handler.flagset.Parse(args)
+
+	if len(args) >= 2 && args[1] == "help" {
+		handler.Help()
+		return
+	}
+
 	configStr := utils.ReadByte(*configPath)
 
 	overallConfig := common.OverallConfig{}
@@ -31,7 +40,14 @@ func (handler DeployHandler) Handle(args []string) {
 	utils.CheckErr(err)
 
 	nodeConfig := overallConfig.NodeConfig
-
+	services.MultipassService{}.Deploy(
+		overallConfig.NodeNum,
+		nodeConfig.CPU,
+		nodeConfig.MEM,
+		nodeConfig.DISK,
+		overallConfig.Image,
+		overallConfig.CloudInit,
+	)
 }
 
 func init() {

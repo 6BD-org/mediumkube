@@ -5,9 +5,11 @@ pub-key-dir: "/home/temp/.ssh/cloud.pub"
 priv-key-dir: "/home/temp/.ssh/cloud"
 host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
 
+image: "file:///home/temp/u_20.04.img"
+cloud-init: "./cloud-init.yaml"
 
 node-num: 3
 node:
-  cpu: 2
-  mem: 2
-  disk: 20
+  cpu: "2"
+  mem: "2G"
+  disk: "20G"

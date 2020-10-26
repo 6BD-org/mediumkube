@@ -29,11 +29,20 @@ type MultipassService struct{}
 // img can be either remote image name or local .img file. See multipass document for more details
 // cloudInit is cloudInit file used by multipass
 func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk string, img string, cloudInit string) {
-	cmd := "multipass launch -v -n node%v --cloud-init cloud-init.yaml -c %v -m %v -d %v %v"
 	for i := 0; i < nodeNum; i++ {
 		log.Printf("Deploying %v of %v nodes\n\r", i+1, nodeNum)
-		thisCmd := fmt.Sprintf(cmd, i+1, cpu, mem, disk, img)
-		execCmd := exec.Command(thisCmd)
+		execCmd := exec.Command(
+			"multipass",
+			"launch",
+			"-v",
+			"-n", fmt.Sprintf("node%v", i+1),
+			"--cloud-init", cloudInit,
+			"-c", cpu,
+			"-m", mem,
+			"-d", disk,
+			img,
+		)
+
 		_, err := execCmd.Output()
 		utils.CheckErr(err)
 		log.Print("OK!")
