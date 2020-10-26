@@ -8,3 +8,10 @@ func ReadStr(path string) string {
 	CheckErr(err)
 	return string(data)
 }
+
+// ReadByte read a file as byte array
+func ReadByte(path string) []byte {
+	data, err := ioutil.ReadFile(path)
+	CheckErr(err)
+	return data
+}

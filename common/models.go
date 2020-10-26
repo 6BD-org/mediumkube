@@ -12,3 +12,20 @@ type TemplateConfig struct {
 	PrivKey    string
 	HostPubKey string
 }
+
+// NodeConfig Config for each noed. "node" field  in config yaml
+type NodeConfig struct {
+	CPU  string `yaml:"cpu"`
+	MEM  string `yaml:"gpu"`
+	DISK string `yaml:"disk"`
+}
+
+// OverallConfig Over-all configs
+/*
+This config is in same file with Template config, but when parsed,
+the template part will be ignored.
+*/
+type OverallConfig struct {
+	NodeConfig NodeConfig `yaml:"node"`
+	NodeNum    int        `yaml:"node-num"`
+}

@@ -4,3 +4,10 @@ https-proxy: "172.16.184.20:1091"
 pub-key-dir: "/home/temp/.ssh/cloud.pub"
 priv-key-dir: "/home/temp/.ssh/cloud"
 host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
+
+
+node-num: 3
+node:
+  cpu: 2
+  mem: 2
+  disk: 20

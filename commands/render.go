@@ -13,8 +13,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var Name = "render"
-
 func parseConfig(configPath string) common.TemplateConfig {
 	data := utils.ReadStr(configPath)
 
@@ -55,6 +53,7 @@ func Render(configPath string, templatePath string, outPath string) {
 	utils.CheckErr(err)
 }
 
+// RenderHandler This handles render command
 type RenderHandler struct {
 	flagSet *flag.FlagSet
 }
@@ -86,8 +85,9 @@ func (handler RenderHandler) Help() {
 }
 
 func init() {
+	var name = "render"
 	// Register to root
-	CMD[Name] = RenderHandler{
-		flagSet: flag.NewFlagSet(Name, flag.ExitOnError),
+	CMD[name] = RenderHandler{
+		flagSet: flag.NewFlagSet(name, flag.ExitOnError),
 	}
 }
