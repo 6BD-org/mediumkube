@@ -67,7 +67,18 @@ in your `yaml.tmpl` file, and render it using that simple go program
 
 $ go build -o main main.go
 
-$ ./main
+$ ./main render
+
+```
+
+To get help, of available commands
+
+```bash
+# List available commands
+$ ./main help
+
+# Get help of sub commands
+$ ./main render help
 
 ```
 
@@ -82,7 +93,7 @@ $ ./main
 # -n node01 node named node01
 # file path to .img file
 
-$ multipass launch -v -n node01 --cloud-init cloud-init.yaml -c 2 -m 2G -d 20G file://{path_to_image}
+$ multipass launch -v -n node01 --cloud-init cloud-init.yaml -c 2 -m 2G -d 20G file:///home/temp/u_20.04.img
 ```
 
 ### purge instance
