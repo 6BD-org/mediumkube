@@ -13,3 +13,9 @@ node:
   cpu: "2"
   mem: "2G"
   disk: "20G"
+
+# see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
+kube-init:
+  args:
+    - key: "ignore-preflight-errors"
+      value: "control-plane-prepare"

@@ -7,9 +7,10 @@ import (
 	"os/exec"
 )
 
+// MultipassService interact with multipass using commands
 type MultipassService struct{}
 
-// Deploy deploy a kubernetes cluster
+// Deploy deploy a vm collection
 // All the parameters are guaranteed to ne non-nil values from
 // Upper layers
 //
@@ -42,9 +43,13 @@ func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk
 			"-d", disk,
 			img,
 		)
-
 		_, err := execCmd.Output()
 		utils.CheckErr(err)
-		log.Print("OK!")
+		log.Println("OK!")
 	}
+}
+
+// KubeInit init k8s cluster on a node
+func (service MultipassService) KubeInit(node string, command string) {
+	fmt.Println(command)
 }

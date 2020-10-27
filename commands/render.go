@@ -66,10 +66,8 @@ func (handler RenderHandler) Handle(args []string) {
 
 	handler.flagSet.Parse(args)
 
-	if len(args) > 1 {
-		if args[1] == "help" {
-			handler.Help()
-		}
+	if Help(handler, args) {
+		return
 	}
 
 	Render(*configPath, *templatePath, *outPath)

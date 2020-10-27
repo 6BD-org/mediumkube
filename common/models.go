@@ -20,6 +20,17 @@ type NodeConfig struct {
 	DISK string `yaml:"disk"`
 }
 
+// Arg Argument
+type Arg struct {
+	Key   string `yaml:"key"`
+	Value string `yaml:"value"`
+}
+
+// KubeInit Configuration for kubeadm init
+type KubeInit struct {
+	Args []Arg `yaml:"args"`
+}
+
 // OverallConfig Over-all configs
 /*
 This config is in same file with Template config, but when parsed,
@@ -30,4 +41,5 @@ type OverallConfig struct {
 	NodeNum    int        `yaml:"node-num"`
 	Image      string     `yaml:"image"`
 	CloudInit  string     `yaml:"cloud-init"`
+	KubeInit   KubeInit   `yaml:"kube-init"`
 }

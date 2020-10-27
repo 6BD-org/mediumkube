@@ -31,6 +31,8 @@ func (handler RootHandler) Handle(args []string) {
 			CMD["render"].Handle(args[1:])
 		case "deploy":
 			CMD["deploy"].Handle(args[1:])
+		case "init":
+			CMD["init"].Handle(args[1:])
 		case "help":
 			handler.Help()
 		default:

@@ -27,8 +27,7 @@ func (handler DeployHandler) Handle(args []string) {
 	configPath := handler.flagset.String("config", "./config.yaml", "Config yaml for deployment")
 	handler.flagset.Parse(args)
 
-	if len(args) >= 2 && args[1] == "help" {
-		handler.Help()
+	if Help(handler, args) {
 		return
 	}
 
