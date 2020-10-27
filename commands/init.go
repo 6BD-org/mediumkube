@@ -57,7 +57,8 @@ func (handler InitHandler) Handle(args []string) {
 
 	kubeInitArgs := overallConfig.KubeInit.Args
 	cmd := initCmd(kubeInitArgs)
-	services.MultipassService{}.Exec(*node, cmd)
+	services.MultipassService{}.Exec(*node, cmd, true)
+	// TODO: Add post-command to enable kubectl
 
 }
 

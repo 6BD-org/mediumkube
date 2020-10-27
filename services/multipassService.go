@@ -67,8 +67,11 @@ func (service MultipassService) KubeInit(node string, command string) {
 }
 
 // Exec Execute a command on a virtual machine
-func (service MultipassService) Exec(node string, command []string) {
+func (service MultipassService) Exec(node string, command []string, sudo bool) {
 	log.Printf("Executing %v on node %v...", command, node)
+	if sudo {
+		command = append([]string{"sudo"}, command...)
+	}
 	command = append([]string{"exec", "-v", node, "--"}, command...)
 	execCmd := exec.Command(
 		"multipass", command...,

@@ -65,9 +65,21 @@ write_files:
     path: /run/bootstrap/init_kube.sh
     permissions: '0777'
 
+  - content: |
+      [Service]
+      Environment="HTTP_PROXY={{ .HTTPProxy }}"
+      Environment="HTTPS_PROXY={{ .HTTPSProxy }}"
+    path: /etc/systemd/system/docker.service.d/http-proxy.conf
+    permissions: '0666'
+
 
 runcmd:
   - mkdir -p /var/log/bootstrap
+  - sudo mkdir -p /etc/systemd/system/docker.service.d
   - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh
   - sh /run/bootstrap/init_network.sh >> /var/log/bootstrap/init_network.log
   - sh /run/bootstrap/init_kube.sh >> /var/log/bootstrap/init_kubeadm.log
+  - sudo systemctl daemon-reload
+  - sudo systemctl restart docker
+  - sudo echo "Docker proxies" >> /var/log/bootstrap/docker.log
+  - sudo systemctl show --property=Environment docker >> /var/log/bootstrap/docker.log
