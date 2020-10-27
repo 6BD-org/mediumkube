@@ -65,7 +65,7 @@ in your `yaml.tmpl` file, and render it using that simple go program
 
 ```bash
 
-$ go build -o main main.go
+$ ./hack/build.sh
 
 $ ./main render
 
@@ -107,11 +107,11 @@ $ ./main deploy --config ./cloud-init.yaml
 
 ```bash
 
-$ ./purge.sh {instance_name}
+$ ./hack/purge.sh {instance_name}
+
+# To purge multiple nodes at the same time
+$ ./hack/purge.sh node1 node2 node3
 ```
-
-
-
 
 ### Start K8s cluster
 
@@ -127,14 +127,27 @@ $ ./purge.sh {instance_name}
 $ kubeadm init --ignore-preflight-errors=all
 ```
 
+A better way of starting k8s cluster is using out cli after 
+configuring kube-init section properly.
+
+```
+$ ./main init --config ./config.yaml
+```
+
 ### Logging
 
 To check the log of multipass,
 
 ```bash
-
 journalctl --unit snap.multipass*
+```
 
+If you are executing commands in the virtual machine during init, make sure to save logs to file
+for analysis. In cloud-init
+
+```bash
+runcmd:
+    - sh dosomething.sh >> /var/log/bootstrap/dosomething.log
 ```
 
 ## Roadmap
