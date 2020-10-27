@@ -58,6 +58,7 @@ func (service MultipassService) KubeInit(node string, command string) {
 		"exec",
 		"-v",
 		node,
+		"--",
 		command,
 	)
 	out, err := execCmd.Output()
@@ -66,15 +67,13 @@ func (service MultipassService) KubeInit(node string, command string) {
 }
 
 // Exec Execute a command on a virtual machine
-func (service MultipassService) Exec(node string, command string) {
+func (service MultipassService) Exec(node string, command []string) {
 	log.Printf("Executing %v on node %v...", command, node)
+	command = append([]string{"exec", "-v", node, "--"}, command...)
 	execCmd := exec.Command(
-		"multipass",
-		"exec",
-		"-v",
-		node,
-		command,
+		"multipass", command...,
 	)
+	fmt.Println(execCmd.Args)
 	out, err := utils.ExecWithStdio(execCmd)
 	utils.CheckErr(err)
 	log.Println(out)

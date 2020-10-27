@@ -8,7 +8,7 @@ host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
 image: "file:///home/temp/u_20.04.img"
 cloud-init: "./cloud-init.yaml"
 
-node-num: 3
+node-num: 2
 node:
   cpu: "2"
   mem: "2G"

@@ -83,7 +83,7 @@ $ ./main render help
 ```
 
 
-### Launch instance
+## Launch instance
 
 ```bash
 
@@ -103,7 +103,7 @@ A better way of launching instance is via cli
 $ ./main deploy --config ./cloud-init.yaml
 ```
 
-### purge instance
+## purge instance
 
 ```bash
 
@@ -113,7 +113,7 @@ $ ./hack/purge.sh {instance_name}
 $ ./hack/purge.sh node1 node2 node3
 ```
 
-### Start K8s cluster
+## Start K8s cluster
 
 
 ```
@@ -134,7 +134,7 @@ configuring kube-init section properly.
 $ ./main init --config ./config.yaml
 ```
 
-### Logging
+## Logging
 
 To check the log of multipass,
 
@@ -149,6 +149,31 @@ for analysis. In cloud-init
 runcmd:
     - sh dosomething.sh >> /var/log/bootstrap/dosomething.log
 ```
+
+## About CLI
+For ease of development, this cli only contains 2 layers of command hierarchy and key word arguments, like following
+
+```
+$ main-command sub-command --key1 val1 --key2 val2
+```
+
+excepting `help`
+
+```
+# Get help of available sub-commands
+$ main-command help 
+
+# Get help of particular sub-command
+$ main-command sub-command help
+```
+
+You can extend the layer, of course, by intercepting args and pass them through to another command handler, then you get this
+
+```
+$ main-command sub-command-1 sub-command-2 --key val
+```
+
+But I personally don't encourage either adding more layers or mixing up positional and keyword arguments.
 
 ## Roadmap
 - Cli tool for cluster management

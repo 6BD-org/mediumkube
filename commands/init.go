@@ -24,10 +24,11 @@ func (InitHandler) Desc() string {
 	return "Initialize a k8s cluster"
 }
 
-func initCmd(args []common.Arg) string {
-	cmd := "kubeadm init"
+func initCmd(args []common.Arg) []string {
+	cmd := []string{"kubeadm", "init"}
 	for _, arg := range args {
-		cmd += fmt.Sprintf(" --%v %v", arg.Key, arg.Value)
+		cmd = append(cmd, "--"+arg.Key)
+		cmd = append(cmd, arg.Value)
 	}
 	return cmd
 }
@@ -56,7 +57,7 @@ func (handler InitHandler) Handle(args []string) {
 
 	kubeInitArgs := overallConfig.KubeInit.Args
 	cmd := initCmd(kubeInitArgs)
-	services.MultipassService{}.KubeInit(*node, cmd)
+	services.MultipassService{}.Exec(*node, cmd)
 
 }
 
