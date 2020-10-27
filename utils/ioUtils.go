@@ -1,0 +1,45 @@
+package utils
+
+import (
+	"bytes"
+	"io"
+	"os"
+	"os/exec"
+)
+
+// ExecWithStdio execute the command with stdio attached
+// so that runtime output can be captured
+func ExecWithStdio(cmd *exec.Cmd) (string, error) {
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+
+	/* Error occurred when copying out/err to std */
+	var errCpyOut, errCpyErr error
+
+	var err error
+
+	/* IO Pipe of command */
+	stdOutIn, _ := cmd.StdoutPipe()
+	stdErrIn, _ := cmd.StderrPipe()
+
+	err = cmd.Start()
+	CheckErr(err)
+
+	stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
+	stderr := io.MultiWriter(os.Stderr, &stderrBuf)
+
+	go func() {
+		_, errCpyOut = io.Copy(stdout, stdOutIn)
+
+	}()
+
+	go func() {
+		_, errCpyErr = io.Copy(stderr, stdErrIn)
+	}()
+
+	CheckErr(errCpyOut)
+	CheckErr(errCpyErr)
+	err = cmd.Wait()
+
+	return string(stdoutBuf.Bytes()), err
+}

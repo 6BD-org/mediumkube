@@ -66,18 +66,6 @@ write_files:
     permissions: '0777'
 
 
-  # Init master node
-  - content: |
-      #!/bin/bash
-      kubeadm init
-
-    path: /run/bootstrap/init.sh
-
-  # Join master node
-  - content: |
-      #!/bin/bash
-    path: /run/bootstrap/join.sh
-
 runcmd:
   - mkdir -p /var/log/bootstrap
   - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh

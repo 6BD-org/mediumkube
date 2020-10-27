@@ -64,7 +64,7 @@ func (handler RenderHandler) Handle(args []string) {
 	templatePath := handler.flagSet.String("template", "./cloud-init.yaml.tmpl", "Path to cloud init yaml template")
 	outPath := handler.flagSet.String("out", "./cloud-init.yaml", "Path of output yaml")
 
-	handler.flagSet.Parse(args)
+	handler.flagSet.Parse(args[1:])
 
 	if Help(handler, args) {
 		return

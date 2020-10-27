@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"mediumkube/utils"
+
 	"os/exec"
 )
 
@@ -31,7 +32,7 @@ type MultipassService struct{}
 // cloudInit is cloudInit file used by multipass
 func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk string, img string, cloudInit string) {
 	for i := 0; i < nodeNum; i++ {
-		log.Printf("Deploying %v of %v nodes\n\r", i+1, nodeNum)
+		log.Printf("Deploying %v of %v nodes", i+1, nodeNum)
 		execCmd := exec.Command(
 			"multipass",
 			"launch",
@@ -51,5 +52,31 @@ func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk
 
 // KubeInit init k8s cluster on a node
 func (service MultipassService) KubeInit(node string, command string) {
-	fmt.Println(command)
+	log.Printf("Executing %v on node %v...", command, node)
+	execCmd := exec.Command(
+		"multipass",
+		"exec",
+		"-v",
+		node,
+		command,
+	)
+	out, err := execCmd.Output()
+	utils.CheckErr(err)
+	log.Println(out)
+}
+
+// Exec Execute a command on a virtual machine
+func (service MultipassService) Exec(node string, command string) {
+	log.Printf("Executing %v on node %v...", command, node)
+	execCmd := exec.Command(
+		"multipass",
+		"exec",
+		"-v",
+		node,
+		command,
+	)
+	out, err := utils.ExecWithStdio(execCmd)
+	utils.CheckErr(err)
+	log.Println(out)
+
 }

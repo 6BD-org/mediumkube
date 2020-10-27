@@ -36,7 +36,7 @@ func (handler InitHandler) Handle(args []string) {
 
 	configPath := handler.flagSet.String("config", "./config.yaml", "Config file that defines kubernetes init args")
 	node := handler.flagSet.String("node", "node1", "Node to be inited")
-	handler.flagSet.Parse(args)
+	handler.flagSet.Parse(args[1:])
 
 	if len(args) < 2 {
 		fmt.Println("Insufficient arguments.")
