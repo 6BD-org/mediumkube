@@ -1,0 +1,7 @@
+proxy:
+    http: "{{ .HTTPProxy }}"
+    https: "{{ .HTTPSProxy }}"
+    priv: |
+      {{- .PubKey | nindent 6}}
+    file: |
+      {{- .LoadFile "./text.txt" | nindent 6}}

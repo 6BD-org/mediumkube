@@ -1,0 +1,6 @@
+http-proxy: "localhost:1091"
+https-proxy: "localhost:1091"
+
+pub-key-dir: "./test.pub"
+priv-key-dir: "./test.key"
+host-pub-key-dir: "./test.pub"
