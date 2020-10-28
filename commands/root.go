@@ -12,6 +12,7 @@ type RootHandler struct {
 
 // CMD Sub commands shoud register itself to this map
 var CMD = make(map[string]Handler)
+var multipassDelegated = []string{"list", "delete", "purge", "exec", "shell", "info", "launch", "start", "find"}
 
 // Help help
 func (handler RootHandler) Help() {
@@ -19,12 +20,16 @@ func (handler RootHandler) Help() {
 	for k := range CMD {
 		fmt.Printf("  -%v: %v\n\r", k, CMD[k].Desc())
 	}
+
+	fmt.Println("\n\rMultipass compatible commands:")
+	for _, cmd := range multipassDelegated {
+		fmt.Printf(" | %v", cmd)
+	}
+	fmt.Print("\n\r")
 }
 
 // Handle handle
 func (handler RootHandler) Handle(args []string) {
-
-	multipassDelegated := []string{"list", "delete", "purge", "exec", "shell", "info", "launch", "start", "find"}
 
 	if len(args) < 2 {
 		fmt.Printf("%v\n", "Insufficient arguments\n")
