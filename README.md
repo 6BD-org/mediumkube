@@ -81,8 +81,6 @@ This will generate an executable `main` in project root.
 
 ## Templating Guide
 
-
-
 In order to simplify the configuration, we support configuration
 and template rendering
 
@@ -141,6 +139,20 @@ $ ./main render help
 
 ```
 
+## Multipass compatibility
+This cli is fully compatible with multipass. You can replace `multipass` with `./main` or any executable name that you build. Just for consistent-looking :smirk:
+
+```bash
+
+# These commands are identical
+
+$ multipass list
+
+$ ./main list 
+
+```
+
+Checkout the [multipass documentation](https://multipass.run/docs/working-with-instances)
 
 ## Launch instance
 

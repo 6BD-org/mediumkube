@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"mediumkube/utils"
+	"os/exec"
 )
 
 // RootHandler root command handler
@@ -22,10 +24,22 @@ func (handler RootHandler) Help() {
 // Handle handle
 func (handler RootHandler) Handle(args []string) {
 
+	multipassDelegated := []string{"list", "delete", "purge"}
+
 	if len(args) < 2 {
 		fmt.Printf("%v\n", "Insufficient arguments\n")
 		handler.Help()
 	} else {
+
+		// Multipass commands are compatible
+		for _, v := range multipassDelegated {
+			if args[1] == v {
+				cmd := exec.Command("multipass", args[1:]...)
+				utils.ExecWithStdio(cmd)
+				return
+			}
+		}
+
 		switch args[1] {
 		case "render":
 			CMD["render"].Handle(args[1:])
