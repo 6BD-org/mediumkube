@@ -24,7 +24,7 @@ func (handler RootHandler) Help() {
 // Handle handle
 func (handler RootHandler) Handle(args []string) {
 
-	multipassDelegated := []string{"list", "delete", "purge"}
+	multipassDelegated := []string{"list", "delete", "purge", "exec", "shell", "info", "launch", "start", "find"}
 
 	if len(args) < 2 {
 		fmt.Printf("%v\n", "Insufficient arguments\n")
@@ -35,7 +35,7 @@ func (handler RootHandler) Handle(args []string) {
 		for _, v := range multipassDelegated {
 			if args[1] == v {
 				cmd := exec.Command("multipass", args[1:]...)
-				utils.ExecWithStdio(cmd)
+				utils.AttachAndExec(cmd)
 				return
 			}
 		}

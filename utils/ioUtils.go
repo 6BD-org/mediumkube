@@ -43,3 +43,12 @@ func ExecWithStdio(cmd *exec.Cmd) (string, error) {
 
 	return string(stdoutBuf.Bytes()), err
 }
+
+// AttachAndExec Exec the command with stdio attached
+func AttachAndExec(cmd *exec.Cmd) {
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	cmd.Run()
+}
