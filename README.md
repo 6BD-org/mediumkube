@@ -19,8 +19,69 @@ $ sudo apt install multipass
 
 ```
 
+### Template configurations
 
-### Build & render
+Most important of all, prepare three keys:
+- Public key of your host machine
+- Generated Private key for cluster machine
+- Generated Public key for cluster machine
+
+These are used to setup trust relations between your host and the cluster as well as cluster nodes.
+
+When your keys are ready, modify the configuration file to point to those key files like this:
+
+```yaml
+pub-key-dir: "/home/temp/.ssh/cloud.pub"
+priv-key-dir: "/home/temp/.ssh/cloud"
+host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
+
+```
+
+Then get your ubuntu image (`.img` file) ready, or you can simple use remote image if you are outside the bitch ass motherfucking firewall.
+
+Also, configure the cloud-init.yaml location. It is already pointed to `./cloud-init.yaml`, which is the default output of template renderer. If you change this, make sure it exists.
+
+```yaml
+image: "file:///home/temp/u_20.04.img"
+cloud-init: "./cloud-init.yaml"
+```
+
+Finally, if you need proxy, do configurations like this
+
+```yaml
+http-proxy: "http://localhost:1091"
+https-proxy: "http://localhost:1091"
+```
+and use `{{ .HTTPSProxy }}` to configure your software.
+
+However, if no proxy is required, remember to remote related template tokens from .tmpl file. This may take some effort :smirk:
+
+Now you are ready to go, build the project and setup your cluster
+
+### Test & Build
+
+[Golang officially](https://golang.org/pkg/testing/) suggests to put test files together with bussiness logic, but we have too many mock-data files, so note that ALL unit tests are located in `./tests`. To run test, 
+
+```bash
+
+$ go test ./tests/...
+
+```
+
+In order to build the project, 
+
+```bash
+
+$ ./hack/build.sh
+
+```
+
+This will generate an executable `main` in project root.
+
+
+## Templating Guide
+
+
 
 In order to simplify the configuration, we support configuration
 and template rendering
@@ -64,8 +125,6 @@ privKey: |
 in your `yaml.tmpl` file, and render it using that simple go program
 
 ```bash
-
-$ ./hack/build.sh
 
 $ ./main render
 
