@@ -13,4 +13,5 @@ func TestRender(t *testing.T) {
 	if utils.ReadStr("./test.gold.yaml") != utils.ReadStr("./test.yaml") {
 		t.Fail()
 	}
+	os.Remove("./test.yaml")
 }
