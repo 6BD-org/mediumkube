@@ -19,6 +19,14 @@ $ sudo apt install multipass
 
 ```
 
+In order to use multipass behind a proxy, use following command
+
+```bash
+
+$ sudo snap set multipass proxy.http="http://{host}:{port}"
+
+```
+
 ### Template configurations
 
 Most important of all, prepare three keys:
