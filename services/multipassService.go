@@ -44,7 +44,7 @@ func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk
 			"-d", disk,
 			img,
 		)
-		_, err := execCmd.Output()
+		_, err := utils.ExecWithStdio(execCmd)
 		utils.CheckErr(err)
 		log.Println("OK!")
 	}
