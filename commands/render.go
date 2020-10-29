@@ -46,6 +46,7 @@ func Render(configPath string, templatePath string, outPath string) {
 	utils.CheckErr(err)
 
 	var out *os.File
+	os.Remove(outPath)
 	out, err = os.Create(outPath)
 	utils.CheckErr(err)
 
