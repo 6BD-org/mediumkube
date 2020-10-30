@@ -22,3 +22,4 @@ kube-init:
       value: "control-plane-prepare"
     - key: "pod-network-cidr"
       value: "10.244.0.0/16"
+
