@@ -10,6 +10,8 @@ github.com/Masterminds/sprig
 # github.com/google/uuid v1.1.2
 ## explicit
 github.com/google/uuid
+# github.com/hhatto/gocloc v0.3.3
+## explicit
 # github.com/huandu/xstrings v1.3.2
 ## explicit
 github.com/huandu/xstrings
