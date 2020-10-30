@@ -1,5 +1,5 @@
-http-proxy: "http://172.16.181.91:1091"
-https-proxy: "http://172.16.181.91:1091"
+http-proxy: "http://172.16.184.92:1091"
+https-proxy: "http://172.16.184.92:1091"
 
 pub-key-dir: "/home/temp/.ssh/cloud.pub"
 priv-key-dir: "/home/temp/.ssh/cloud"
@@ -20,5 +20,5 @@ kube-init:
   args:
     - key: "ignore-preflight-errors"
       value: "control-plane-prepare"
-    - key: "pod-network-cird"
+    - key: "pod-network-cidr"
       value: "10.244.0.0/16"

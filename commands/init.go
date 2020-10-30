@@ -3,6 +3,7 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"log"
 	"mediumkube/common"
 	"mediumkube/services"
 	"mediumkube/utils"
@@ -59,6 +60,9 @@ func (handler InitHandler) Handle(args []string) {
 	cmd := initCmd(kubeInitArgs)
 	services.MultipassService{}.Exec(*node, cmd, true)
 	// TODO: Add post-command to enable kubectl
+
+	log.Printf("Doing post-init configurations")
+	services.MultipassService{}.ExecScript(*node, "./k8s/scripts/post-init.sh", false)
 
 }
 

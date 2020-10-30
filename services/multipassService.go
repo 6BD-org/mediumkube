@@ -6,6 +6,8 @@ import (
 	"mediumkube/utils"
 
 	"os/exec"
+
+	"github.com/google/uuid"
 )
 
 // MultipassService interact with multipass using commands
@@ -66,8 +68,7 @@ func (service MultipassService) KubeInit(node string, command string) {
 	log.Println(out)
 }
 
-// Exec Execute a command on a virtual machine
-func (service MultipassService) Exec(node string, command []string, sudo bool) {
+func preExecPrecess(node string, command []string, sudo bool) *exec.Cmd {
 	log.Printf("Executing %v on node %v...", command, node)
 	if sudo {
 		// sudo inside the virtual machine, so prepend
@@ -77,9 +78,49 @@ func (service MultipassService) Exec(node string, command []string, sudo bool) {
 	execCmd := exec.Command(
 		"multipass", command...,
 	)
-	fmt.Println(execCmd.Args)
+
+	return execCmd
+}
+
+// Exec Execute a command on a virtual machine
+func (service MultipassService) Exec(node string, command []string, sudo bool) string {
+	execCmd := preExecPrecess(node, command, sudo)
 	out, err := utils.ExecWithStdio(execCmd)
 	utils.CheckErr(err)
 	log.Println(out)
+
+	return out
+}
+
+// ExecUnchecked Exec a command on a virtual machine without checking error
+func (service MultipassService) ExecUnchecked(node string, command []string, sudo bool) (string, error) {
+
+	return "", nil
+}
+
+// AttachAndExec Execute a command on a virtual machine with stdio attached
+func (service MultipassService) AttachAndExec(node string, command []string, sudo bool) {
+	execCmd := preExecPrecess(node, command, sudo)
+	utils.AttachAndExec(execCmd)
+}
+
+// ExecScript Execute a local script to a node
+func (service MultipassService) ExecScript(node string, script string, sudo bool) {
+	rndStr := uuid.New().String()
+	targetDir := fmt.Sprintf("/tmp/mediumkube/shell/%v", rndStr)
+	targetPath := fmt.Sprintf("%v/%v", targetDir, utils.GetFileName(script))
+
+	mkdirCmd := []string{"mkdir", "-p", targetDir}
+	sendCmd := exec.Command("multipass", "transfer", script, fmt.Sprintf("%v:%v", node, targetPath))
+	shCmd := []string{"sh", targetPath}
+	rmCmd := []string{"rm", "-rf", targetDir}
+
+	service.Exec(node, mkdirCmd, false)
+
+	utils.ExecWithStdio(sendCmd)
+	service.Exec(node, shCmd, sudo)
+
+	log.Println("Shell execution finished! Cleaning up cache")
+	service.Exec(node, rmCmd, false)
 
 }
