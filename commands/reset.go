@@ -21,8 +21,6 @@ func (ResetHandler) Desc() string {
 
 func (handler ResetHandler) Handle(args []string) {
 
-	node := handler.flagSet.String("node", "", "Name of the node to be reset")
-
 	handler.flagSet.Parse(args[1:])
 	fmt.Println(handler.flagSet.Args())
 
@@ -30,9 +28,11 @@ func (handler ResetHandler) Handle(args []string) {
 		return
 	}
 
+	node := args[1]
+
 	cmd := []string{"kubeadm", "reset"}
 
-	services.MultipassService{}.Exec(*node, cmd, true)
+	services.MultipassService{}.AttachAndExec(node, cmd, true)
 
 }
 
