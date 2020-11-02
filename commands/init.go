@@ -7,7 +7,6 @@ import (
 	"mediumkube/common"
 	"mediumkube/configurations"
 	"mediumkube/services"
-	"mediumkube/utils"
 )
 
 type InitHandler struct {
@@ -59,7 +58,7 @@ func (handler InitHandler) Handle(args []string) {
 
 	// Transfer kube-config
 	log.Println("Transferring kube config")
-	services.GetMultipassService().Transfer(fmt.Sprintf("%v:%v", node, overallConfig.VMKubeConfigDir), utils.KubeConfigPath(overallConfig))
+	services.GetMultipassService().Transfer(fmt.Sprintf("%v:%v", node, overallConfig.VMKubeConfigDir), kubeConfigPath(overallConfig))
 
 }
 
