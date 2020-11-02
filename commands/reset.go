@@ -32,7 +32,7 @@ func (handler ResetHandler) Handle(args []string) {
 
 	cmd := []string{"kubeadm", "reset"}
 
-	services.MultipassService{}.AttachAndExec(node, cmd, true)
+	services.GetMultipassService().AttachAndExec(node, cmd, true)
 
 }
 

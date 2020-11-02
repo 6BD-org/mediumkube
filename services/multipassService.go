@@ -3,7 +3,10 @@ package services
 import (
 	"fmt"
 	"log"
+	"mediumkube/common"
+	"mediumkube/configurations"
 	"mediumkube/utils"
+	"path/filepath"
 
 	"os/exec"
 
@@ -11,7 +14,9 @@ import (
 )
 
 // MultipassService interact with multipass using commands
-type MultipassService struct{}
+type MultipassService struct {
+	OverallConfig common.OverallConfig
+}
 
 // Deploy deploy a vm collection
 // All the parameters are guaranteed to ne non-nil values from
@@ -38,7 +43,7 @@ func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk
 		execCmd := exec.Command(
 			"multipass",
 			"launch",
-			"-v",
+			"-vvv",
 			"-n", fmt.Sprintf("node%v", i+1),
 			"--cloud-init", cloudInit,
 			"-c", cpu,
@@ -68,7 +73,7 @@ func (service MultipassService) KubeInit(node string, command string) {
 	log.Println(out)
 }
 
-func preExecPrecess(node string, command []string, sudo bool) *exec.Cmd {
+func preExecProcess(node string, command []string, sudo bool) *exec.Cmd {
 	log.Printf("Executing %v on node %v...", command, node)
 	if sudo {
 		// sudo inside the virtual machine, so prepend
@@ -84,7 +89,7 @@ func preExecPrecess(node string, command []string, sudo bool) *exec.Cmd {
 
 // Exec Execute a command on a virtual machine
 func (service MultipassService) Exec(node string, command []string, sudo bool) string {
-	execCmd := preExecPrecess(node, command, sudo)
+	execCmd := preExecProcess(node, command, sudo)
 	out, err := utils.ExecWithStdio(execCmd)
 	utils.CheckErr(err)
 	log.Println(out)
@@ -98,29 +103,40 @@ func (service MultipassService) ExecUnchecked(node string, command []string, sud
 	return "", nil
 }
 
+// Transfer transfer file between vm and host machine
+func (service MultipassService) Transfer(src string, tgt string) {
+	transferCmd := exec.Command("multipass", "transfer", src, tgt)
+	utils.ExecWithStdio(transferCmd)
+}
+
 // AttachAndExec Execute a command on a virtual machine with stdio attached
 func (service MultipassService) AttachAndExec(node string, command []string, sudo bool) {
-	execCmd := preExecPrecess(node, command, sudo)
+	execCmd := preExecProcess(node, command, sudo)
 	utils.AttachAndExec(execCmd)
 }
 
 // ExecScript Execute a local script to a node
 func (service MultipassService) ExecScript(node string, script string, sudo bool) {
 	rndStr := uuid.New().String()
-	targetDir := fmt.Sprintf("/tmp/mediumkube/shell/%v", rndStr)
-	targetPath := fmt.Sprintf("%v/%v", targetDir, utils.GetFileName(script))
-
+	//targetDir := fmt.Sprintf("/tmp/mediumkube/shell/%v", rndStr)
+	targetDir := filepath.Join(service.OverallConfig.TmpDir, "shell", rndStr)
+	//targetPath := fmt.Sprintf("%v/%v", targetDir, utils.GetFileName(script))
+	targetPath := filepath.Join(targetDir, utils.GetFileName(script))
 	mkdirCmd := []string{"mkdir", "-p", targetDir}
-	sendCmd := exec.Command("multipass", "transfer", script, fmt.Sprintf("%v:%v", node, targetPath))
+	service.Transfer(script, fmt.Sprintf("%v:%v", node, targetPath))
 	shCmd := []string{"sh", targetPath}
 	rmCmd := []string{"rm", "-rf", targetDir}
 
 	service.Exec(node, mkdirCmd, false)
-
-	utils.ExecWithStdio(sendCmd)
 	service.Exec(node, shCmd, sudo)
 
 	log.Println("Shell execution finished! Cleaning up cache")
 	service.Exec(node, rmCmd, false)
 
+}
+
+func init() {
+	InitMultipassService(MultipassService{
+		OverallConfig: configurations.Config(),
+	})
 }

@@ -1,5 +1,5 @@
-http-proxy: "http://172.16.184.92:1091"
-https-proxy: "http://172.16.184.92:1091"
+http-proxy: "http://172.16.2.16:3128"
+https-proxy: "http://172.16.2.16:3128"
 
 pub-key-dir: "/home/temp/.ssh/cloud.pub"
 priv-key-dir: "/home/temp/.ssh/cloud"
@@ -23,3 +23,10 @@ kube-init:
     - key: "pod-network-cidr"
       value: "10.244.0.0/16"
 
+# MediumKube configs
+
+tmp_dir: /tmp/mediumkube
+
+# Kubeconfig inside the virtual machine
+# For kubernetes client
+vm_kube_config_dir: /home/ubuntu/.kube/config 

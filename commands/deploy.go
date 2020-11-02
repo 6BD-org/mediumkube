@@ -2,11 +2,8 @@ package commands
 
 import (
 	"flag"
-	"mediumkube/common"
+	"mediumkube/configurations"
 	"mediumkube/services"
-	"mediumkube/utils"
-
-	"gopkg.in/yaml.v3"
 )
 
 type DeployHandler struct {
@@ -24,22 +21,16 @@ func (handler DeployHandler) Help() {
 
 func (handler DeployHandler) Handle(args []string) {
 
-	configPath := handler.flagset.String("config", "./config.yaml", "Config yaml for deployment")
 	handler.flagset.Parse(args[1:])
 
 	if Help(handler, args) {
 		return
 	}
 
-	configStr := utils.ReadByte(*configPath)
-
-	overallConfig := common.OverallConfig{}
-
-	err := yaml.Unmarshal(configStr, &overallConfig)
-	utils.CheckErr(err)
+	overallConfig := configurations.Config()
 
 	nodeConfig := overallConfig.NodeConfig
-	services.MultipassService{}.Deploy(
+	services.GetMultipassService().Deploy(
 		overallConfig.NodeNum,
 		nodeConfig.CPU,
 		nodeConfig.MEM,
