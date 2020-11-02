@@ -12,7 +12,7 @@ type KubernetesService struct {
 }
 
 func configPath(config common.OverallConfig) string {
-	return filepath.Join(config.TmpDir, ".kube/config")
+	return filepath.Join(config.TmpDir, ".kube", "config")
 }
 
 func Apply(file string) {

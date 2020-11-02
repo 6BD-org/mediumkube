@@ -25,7 +25,7 @@ kube-init:
 
 # MediumKube configs
 
-tmp_dir: /tmp/mediumkube
+tmp_dir: /home/temp/mediumkube
 
 # Kubeconfig inside the virtual machine
 # For kubernetes client

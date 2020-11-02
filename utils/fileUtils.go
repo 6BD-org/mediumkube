@@ -24,3 +24,9 @@ func GetFileName(fullPath string) string {
 	splitted := strings.Split(fullPath, "/")
 	return splitted[len(splitted)-1]
 }
+
+// GetFileDir get dir of file given full path
+func GetFileDir(fullPath string) string {
+	lastSlash := strings.LastIndex(fullPath, "/")
+	return fullPath[:lastSlash]
+}
