@@ -118,16 +118,14 @@ func (service MultipassService) AttachAndExec(node string, command []string, sud
 // ExecScript Execute a local script to a node
 func (service MultipassService) ExecScript(node string, script string, sudo bool) {
 	rndStr := uuid.New().String()
-	//targetDir := fmt.Sprintf("/tmp/mediumkube/shell/%v", rndStr)
-	targetDir := filepath.Join(service.OverallConfig.TmpDir, "shell", rndStr)
-	//targetPath := fmt.Sprintf("%v/%v", targetDir, utils.GetFileName(script))
+	targetDir := filepath.Join("/tmp", "mediumkube", "shell", rndStr)
 	targetPath := filepath.Join(targetDir, utils.GetFileName(script))
 	mkdirCmd := []string{"mkdir", "-p", targetDir}
-	service.Transfer(script, fmt.Sprintf("%v:%v", node, targetPath))
 	shCmd := []string{"sh", targetPath}
 	rmCmd := []string{"rm", "-rf", targetDir}
 
 	service.Exec(node, mkdirCmd, false)
+	service.Transfer(script, fmt.Sprintf("%v:%v", node, targetPath))
 	service.Exec(node, shCmd, sudo)
 
 	log.Println("Shell execution finished! Cleaning up cache")
