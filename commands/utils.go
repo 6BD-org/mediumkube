@@ -18,3 +18,8 @@ func Help(handler Handler, args []string) bool {
 func kubeConfigPath(config common.OverallConfig) string {
 	return filepath.Join(config.TmpDir, ".kube/config")
 }
+
+// logPath where the log in vms are mounted
+func logPath(config common.OverallConfig) string {
+	return filepath.Join(config.TmpDir, "vmlogs")
+}

@@ -2,6 +2,9 @@ package utils
 
 import (
 	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -29,4 +32,25 @@ func GetFileName(fullPath string) string {
 func GetFileDir(fullPath string) string {
 	lastSlash := strings.LastIndex(fullPath, "/")
 	return fullPath[:lastSlash]
+}
+
+// WalkDir list all files in directory
+func WalkDir(path string) []string {
+	files := make([]string, 0)
+	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil && err != filepath.SkipDir {
+			log.Panic(err)
+		} else {
+			var fi os.FileInfo
+			fi, err = os.Stat(path)
+			CheckErr(err)
+			if !fi.IsDir() {
+				files = append(files, path)
+			}
+		}
+
+		return nil
+	})
+
+	return files
 }
