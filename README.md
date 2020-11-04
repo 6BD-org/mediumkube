@@ -229,6 +229,18 @@ runcmd:
     - sh dosomething.sh >> /var/log/bootstrap/dosomething.log
 ```
 
+We support logging side car. This will mount the log directort inside the vm to host machine, and start go routines to
+watch those file changes.
+
+Mounting in init stage is not officially supported, so we implemented it with ugly loop inside a go routine. This should be fixed as soon as multipass supports mounting. (Also think about watching ssh files)
+
+In order to specify the log directory in vm, add this config
+
+```bash
+vm_log_dir: /var/log/bootstrap
+```
+The logs will be mounted to tmp directory of `mediumkube`
+
 ## About CLI
 For ease of development, this cli only contains 2 layers of command hierarchy and key word arguments, like following
 

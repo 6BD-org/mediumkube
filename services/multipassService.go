@@ -6,7 +6,9 @@ import (
 	"mediumkube/common"
 	"mediumkube/configurations"
 	"mediumkube/utils"
+	"os"
 	"path/filepath"
+	"time"
 
 	"os/exec"
 
@@ -37,14 +39,30 @@ type MultipassService struct {
 //	for example, 20G
 // img can be either remote image name or local .img file. See multipass document for more details
 // cloudInit is cloudInit file used by multipass
-func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk string, img string, cloudInit string) {
+func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk string, img string, cloudInit string, mounts map[string]string) {
 	for i := 0; i < nodeNum; i++ {
 		log.Printf("Deploying %v of %v nodes", i+1, nodeNum)
+		nodeName := fmt.Sprintf("node%v", i+1)
+
+		go func() {
+			for k, v := range mounts {
+				os.MkdirAll(k, 0777)
+				for {
+					mountCmd := exec.Command("multipass", "mount", k, fmt.Sprintf("%v:%v", nodeName, v))
+					_, err := mountCmd.Output()
+					if err != nil {
+						time.Sleep(5 * time.Second)
+					}
+				}
+			}
+
+		}()
+
 		execCmd := exec.Command(
 			"multipass",
 			"launch",
 			"-vvv",
-			"-n", fmt.Sprintf("node%v", i+1),
+			"-n", nodeName,
 			"--cloud-init", cloudInit,
 			"-c", cpu,
 			"-m", mem,

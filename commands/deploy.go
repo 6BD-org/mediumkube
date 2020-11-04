@@ -4,6 +4,9 @@ import (
 	"flag"
 	"mediumkube/configurations"
 	"mediumkube/services"
+	"os"
+
+	"github.com/wylswz/logflog/flogger"
 )
 
 type DeployHandler struct {
@@ -29,6 +32,15 @@ func (handler DeployHandler) Handle(args []string) {
 
 	overallConfig := configurations.Config()
 
+	go func() {
+		os.RemoveAll(logPath(overallConfig))
+		os.MkdirAll(logPath(overallConfig), 0777)
+		flogger.FLog([]string{logPath(overallConfig)})
+	}()
+
+	mount := make(map[string]string)
+	mount[logPath(overallConfig)] = overallConfig.VMLogDir
+
 	nodeConfig := overallConfig.NodeConfig
 	services.GetMultipassService().Deploy(
 		overallConfig.NodeNum,
@@ -37,6 +49,7 @@ func (handler DeployHandler) Handle(args []string) {
 		nodeConfig.DISK,
 		overallConfig.Image,
 		overallConfig.CloudInit,
+		mount,
 	)
 }
 

@@ -26,3 +26,10 @@ func TestFileMode(t *testing.T) {
 	fmt.Println(os.FileMode(0666).String())
 
 }
+
+func TestWalkDir(t *testing.T) {
+	files := utils.WalkDir("./walk_root")
+	if len(files) != 2 {
+		t.Fail()
+	}
+}

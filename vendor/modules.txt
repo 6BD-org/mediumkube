@@ -7,6 +7,8 @@ github.com/Masterminds/semver
 # github.com/Masterminds/sprig v2.22.0+incompatible
 ## explicit
 github.com/Masterminds/sprig
+# github.com/fsnotify/fsnotify v1.4.9
+github.com/fsnotify/fsnotify
 # github.com/google/uuid v1.1.2
 ## explicit
 github.com/google/uuid
@@ -23,10 +25,16 @@ github.com/imdario/mergo
 github.com/mitchellh/copystructure
 # github.com/mitchellh/reflectwalk v1.0.0
 github.com/mitchellh/reflectwalk
+# github.com/wylswz/logflog v0.0.0-20201104022847-2e1ea344f5d5
+## explicit
+github.com/wylswz/logflog/flogger
 # golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 ## explicit
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/scrypt
+# golang.org/x/sys v0.0.0-20201101102859-da207088b7d1
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
 # gopkg.in/yaml.v2 v2.3.0
 ## explicit
 # gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776

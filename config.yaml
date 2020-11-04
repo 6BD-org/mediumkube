@@ -29,4 +29,5 @@ tmp_dir: /home/temp/mediumkube
 
 # Kubeconfig inside the virtual machine
 # For kubernetes client
-vm_kube_config_dir: /home/ubuntu/.kube/config 
+vm_kube_config_dir: /home/ubuntu/.kube/config
+vm_log_dir: /var/log/bootstrap
