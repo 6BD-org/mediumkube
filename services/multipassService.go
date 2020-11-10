@@ -76,20 +76,20 @@ func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk
 }
 
 // KubeInit init k8s cluster on a node
-func (service MultipassService) KubeInit(node string, command string) {
-	log.Printf("Executing %v on node %v...", command, node)
-	execCmd := exec.Command(
-		"multipass",
-		"exec",
-		"-v",
-		node,
-		"--",
-		command,
-	)
-	out, err := execCmd.Output()
-	utils.CheckErr(err)
-	log.Println(out)
-}
+// func (service MultipassService) KubeInit(node string, command string) {
+// 	log.Printf("Executing %v on node %v...", command, node)
+// 	execCmd := exec.Command(
+// 		"multipass",
+// 		"exec",
+// 		"-v",
+// 		node,
+// 		"--",
+// 		command,
+// 	)
+// 	out, err := execCmd.Output()
+// 	utils.CheckErr(err)
+// 	log.Println(out)
+// }
 
 func preExecProcess(node string, command []string, sudo bool) *exec.Cmd {
 	log.Printf("Executing %v on node %v...", command, node)

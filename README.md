@@ -224,7 +224,7 @@ journalctl --unit snap.multipass*
 If you are executing commands in the virtual machine during init, make sure to save logs to file
 for analysis. In cloud-init
 
-```bash
+```yaml
 runcmd:
     - sh dosomething.sh >> /var/log/bootstrap/dosomething.log
 ```
@@ -236,7 +236,7 @@ Mounting in init stage is not officially supported, so we implemented it with ug
 
 In order to specify the log directory in vm, add this config
 
-```bash
+```yaml
 vm_log_dir: /var/log/bootstrap
 ```
 The logs will be mounted to tmp directory of `mediumkube`
