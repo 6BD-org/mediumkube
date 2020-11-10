@@ -6,6 +6,7 @@ import (
 	"log"
 	"mediumkube/common"
 	"mediumkube/configurations"
+	"mediumkube/k8s"
 	"mediumkube/services"
 	"mediumkube/utils"
 	"os"
@@ -59,13 +60,13 @@ func (handler InitHandler) Handle(args []string) {
 	services.GetMultipassService().ExecScript(*node, "./k8s/scripts/post-init.sh", false)
 
 	// Transfer kube-config
-	log.Printf("Mkdir %v\n", utils.GetFileDir(kubeConfigPath(overallConfig)))
+	log.Printf("Mkdir %v\n", utils.GetFileDir(k8s.KubeConfigPath(overallConfig)))
 
 	// We need execute permission here for cascade mkdir
-	err := os.MkdirAll(utils.GetFileDir(kubeConfigPath(overallConfig)), os.FileMode(0777))
+	err := os.MkdirAll(utils.GetFileDir(k8s.KubeConfigPath(overallConfig)), os.FileMode(0777))
 	utils.CheckErr(err)
 	log.Println("Transferring kube config")
-	services.GetMultipassService().Transfer(fmt.Sprintf("%v:%v", *node, overallConfig.VMKubeConfigDir), kubeConfigPath(overallConfig))
+	services.GetMultipassService().Transfer(fmt.Sprintf("%v:%v", *node, overallConfig.VMKubeConfigDir), k8s.KubeConfigPath(overallConfig))
 
 }
 
