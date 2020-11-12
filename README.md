@@ -266,6 +266,28 @@ $ main-command sub-command-1 sub-command-2 --key val
 
 But I personally don't encourage either adding more layers or mixing up positional and keyword arguments.
 
+
+## Install resource to kubernetes using MediumKube
+
+Following types are currently supported You are free to add more if you need them
+
+```golang
+	resourceType["PodSecurityPolicy"] = &v1beta1.PodSecurityPolicy{}
+	resourceType["ClusterRole"] = &v1.ClusterRole{}
+	resourceType["ClusterRoleBinding"] = &v1.ClusterRoleBinding{}
+	resourceType["ServiceAccount"] = &coreV1.ServiceAccount{}
+	resourceType["ConfigMap"] = &coreV1.ConfigMap{}
+	resourceType["DaemonSet"] = &appsV1.DaemonSet{}
+	resourceType["StatefulSet"] = &appsV1.StatefulSet{}
+```
+
+You can edit your yaml outside the cluster using your favorite text editor, and submit them using the command 
+
+```bash
+$ ./mediumkube apply my.yaml
+```
+
+
 ## Roadmap
 - Cli tool for cluster management
   - Cluster deployment
