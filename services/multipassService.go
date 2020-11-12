@@ -17,7 +17,7 @@ import (
 
 // MultipassService interact with multipass using commands
 type MultipassService struct {
-	OverallConfig common.OverallConfig
+	OverallConfig *common.OverallConfig
 }
 
 // Deploy deploy a vm collection

@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"bytes"
 	"io"
 	"mediumkube/common"
 	"mediumkube/utils"
@@ -12,10 +13,11 @@ import (
 )
 
 // KubeConfigPath Get path of kube config on host machine
-func KubeConfigPath(config common.OverallConfig) string {
+func KubeConfigPath(config *common.OverallConfig) string {
 	return filepath.Join(config.TmpDir, ".kube/config")
 }
 
+// ParseResources Parse Yaml to k8s resource
 func ParseResources(path string) map[string]interface{} {
 	resourceMapping := NewResourceMapping()
 	reader, err := os.Open(path)
@@ -24,13 +26,20 @@ func ParseResources(path string) map[string]interface{} {
 
 	for {
 		buf := make([]byte, 5*1024*1024)
-		kindAware := KindAware{}
-		_, err := splittedReader.Read(buf)
+
+		kindIdentifier := KindIdentifier{}
+		size, err := splittedReader.Read(buf)
+		if size == 0 {
+			break
+		}
 		if err != nil && err != io.EOF {
 			utils.CheckErr(err)
 		}
-		go_yaml.Unmarshal(buf, &kindAware)
-		go_yaml.Unmarshal(buf, resourceMapping[kindAware.Kind])
+		err = go_yaml.Unmarshal(buf[:size], &kindIdentifier)
+		utils.CheckErr(err)
+		decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(buf[:size]), size)
+		err = decoder.Decode(resourceMapping[kindIdentifier.Kind])
+		utils.CheckErr(err)
 		if err == io.EOF {
 			break
 		}

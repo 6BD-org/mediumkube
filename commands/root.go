@@ -56,6 +56,8 @@ func (handler RootHandler) Handle(args []string) {
 			CMD["reset"].Handle(args[1:])
 		case "join":
 			CMD["join"].Handle(args[1:])
+		case "apply":
+			CMD["apply"].Handle(args[1:])
 		case "help":
 			handler.Help()
 		default:

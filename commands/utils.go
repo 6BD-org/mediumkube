@@ -15,6 +15,6 @@ func Help(handler Handler, args []string) bool {
 }
 
 // logPath where the log in vms are mounted
-func logPath(config common.OverallConfig) string {
+func logPath(config *common.OverallConfig) string {
 	return filepath.Join(config.TmpDir, "vmlogs")
 }
