@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go build -o main main.go
+go build -o mediumkube main.go

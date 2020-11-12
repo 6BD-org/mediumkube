@@ -1,6 +1,9 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+	"mediumkube/services"
+)
 
 type ApplyHandler struct {
 }
@@ -24,6 +27,8 @@ func (handler ApplyHandler) Handle(args []string) {
 	}
 
 	// TODO, get k8s client and apply changes
+	file := args[1]
+	services.GetK8sService().Apply(file)
 
 }
 

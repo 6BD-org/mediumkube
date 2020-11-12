@@ -7,8 +7,8 @@ import (
 	v1 "k8s.io/api/rbac/v1"
 )
 
-type KindAware struct {
-	Kind string `yaml:"Kind"`
+type KindIdentifier struct {
+	Kind string `yaml:"kind"`
 }
 
 // New create a new resource mapping
