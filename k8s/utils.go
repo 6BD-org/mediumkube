@@ -18,7 +18,8 @@ func KubeConfigPath(config *common.OverallConfig) string {
 }
 
 // ParseResources Parse Yaml to k8s resource
-func ParseResources(path string) map[string]interface{} {
+// For compositional yaml files, each component is decoded and written into channel
+func ParseResources(path string, ch chan interface{}) {
 	resourceMapping := NewResourceMapping()
 	reader, err := os.Open(path)
 	utils.CheckErr(err)
@@ -40,10 +41,12 @@ func ParseResources(path string) map[string]interface{} {
 		decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(buf[:size]), size)
 		err = decoder.Decode(resourceMapping[kindIdentifier.Kind])
 		utils.CheckErr(err)
+
+		ch <- resourceMapping[kindIdentifier.Kind]
 		if err == io.EOF {
 			break
 		}
 	}
+	close(ch)
 
-	return resourceMapping
 }

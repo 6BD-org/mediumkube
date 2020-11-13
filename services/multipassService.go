@@ -6,9 +6,7 @@ import (
 	"mediumkube/common"
 	"mediumkube/configurations"
 	"mediumkube/utils"
-	"os"
 	"path/filepath"
-	"time"
 
 	"os/exec"
 
@@ -24,72 +22,34 @@ type MultipassService struct {
 // All the parameters are guaranteed to ne non-nil values from
 // Upper layers
 //
-// The name of the nodes are node01, node02, ... nodeXX depending on how
-// many nodes are deployed
-//
 // All the nodes are identical in terms of resources. This is
 // for simplicity. If you are configuring a real cluster, think about QoS when
 // configuring different nodes
 //
-// cpu is the number of cpu cores
-// 	for example, 2
-// mem is memory size in Gigabytes
-// 	for example, 2G
-// disk is disk space in Gigagytes
-//	for example, 20G
-// img can be either remote image name or local .img file. See multipass document for more details
+// image can be either remote image name or local .img file. See multipass document for more details
 // cloudInit is cloudInit file used by multipass
-func (service MultipassService) Deploy(nodeNum int, cpu string, mem string, disk string, img string, cloudInit string, mounts map[string]string) {
-	for i := 0; i < nodeNum; i++ {
-		log.Printf("Deploying %v of %v nodes", i+1, nodeNum)
-		nodeName := fmt.Sprintf("node%v", i+1)
-
-		go func() {
-			for k, v := range mounts {
-				os.MkdirAll(k, 0777)
-				for {
-					mountCmd := exec.Command("multipass", "mount", k, fmt.Sprintf("%v:%v", nodeName, v))
-					_, err := mountCmd.Output()
-					if err != nil {
-						time.Sleep(5 * time.Second)
-					}
-				}
-			}
-
-		}()
+func (service MultipassService) Deploy(nodes []common.NodeConfig, cloudInit string, image string) {
+	for _, node := range nodes {
+		log.Printf("Deploying node: %v", node.Name)
 
 		execCmd := exec.Command(
 			"multipass",
 			"launch",
-			"-vvv",
-			"-n", nodeName,
+			"-v",
+			"-v",
+			"-v",
+			"-n", node.Name,
 			"--cloud-init", cloudInit,
-			"-c", cpu,
-			"-m", mem,
-			"-d", disk,
-			img,
+			"-c", node.CPU,
+			"-m", node.MEM,
+			"-d", node.DISK,
+			image,
 		)
 		_, err := utils.ExecWithStdio(execCmd)
 		utils.CheckErr(err)
-		log.Println("OK!")
+		log.Println("Deploy successfully")
 	}
 }
-
-// KubeInit init k8s cluster on a node
-// func (service MultipassService) KubeInit(node string, command string) {
-// 	log.Printf("Executing %v on node %v...", command, node)
-// 	execCmd := exec.Command(
-// 		"multipass",
-// 		"exec",
-// 		"-v",
-// 		node,
-// 		"--",
-// 		command,
-// 	)
-// 	out, err := execCmd.Output()
-// 	utils.CheckErr(err)
-// 	log.Println(out)
-// }
 
 func preExecProcess(node string, command []string, sudo bool) *exec.Cmd {
 	log.Printf("Executing %v on node %v...", command, node)

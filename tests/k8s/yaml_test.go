@@ -8,9 +8,9 @@ import (
 )
 
 func TestParseYaml(t *testing.T) {
-	resMap := k8s.ParseResources("./test.yaml")
-	for k, v := range resMap {
-		log.Println(k, v)
+	ch := make(chan interface{})
+	k8s.ParseResources("./test.yaml", ch)
+	for v := range ch {
 		log.Println(reflect.TypeOf(v))
 	}
 }
