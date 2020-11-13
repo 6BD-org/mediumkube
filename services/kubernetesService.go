@@ -41,9 +41,10 @@ func parse(path string) {
 // Apply Install a yaml resource to cluster
 func (service KubernetesService) Apply(file string) {
 	client := service.Client()
-	resourceMap := k8s.ParseResources(file)
+	ch := make(chan interface{})
+	go k8s.ParseResources(file, ch)
 	ctx := context.TODO()
-	for _, v := range resourceMap {
+	for v := range ch {
 		switch v.(type) {
 		case *v1beta1.PodSecurityPolicy:
 			field, ok := v.(*v1beta1.PodSecurityPolicy)

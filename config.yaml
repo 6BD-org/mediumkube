@@ -8,11 +8,21 @@ host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
 image: "file:///home/temp/u_20.04.img"
 cloud-init: "./cloud-init.yaml"
 
-node-num: 2
-node:
-  cpu: "2"
-  mem: "2G"
-  disk: "20G"
+nodes:
+  - name: node1
+    cpu: "2"
+    mem: "2G"
+    disk: "20G"
+    mounts:
+      - host: /home/temp/mediumkube/vmlogs
+        vm: /var/log/bootstrap
+  - name: node2
+    cpu: "2"
+    mem: "2G"
+    disk: "20G"
+    mounts:
+      - host: /home/temp/mediumkube/vmlogs
+        vm: /var/log/bootstrap
 
 # see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
 # see https://coreos.com/flannel/docs/latest/kubernetes.html for Flannel guides

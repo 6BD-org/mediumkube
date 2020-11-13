@@ -2,11 +2,10 @@ package commands
 
 import (
 	"flag"
+	"fmt"
+	"mediumkube/common"
 	"mediumkube/configurations"
 	"mediumkube/services"
-	"os"
-
-	"github.com/wylswz/logflog/flogger"
 )
 
 type DeployHandler struct {
@@ -18,7 +17,8 @@ func (handler DeployHandler) Desc() string {
 }
 
 func (handler DeployHandler) Help() {
-	handler.flagset.Usage()
+	fmt.Println("deploy node1 node2...")
+	fmt.Println("Absence of node indicates deploy all defined nodes")
 
 }
 
@@ -29,27 +29,31 @@ func (handler DeployHandler) Handle(args []string) {
 	if Help(handler, args) {
 		return
 	}
-
 	overallConfig := configurations.Config()
+	var nodes []common.NodeConfig
+	nodeNames := args[1:]
 
-	go func() {
-		os.RemoveAll(logPath(overallConfig))
-		os.MkdirAll(logPath(overallConfig), 0777)
-		flogger.FLog([]string{logPath(overallConfig)})
-	}()
+	if len(nodeNames) == 0 {
+		nodes = overallConfig.NodeConfig
+	} else {
+		nodes = make([]common.NodeConfig, 0)
+		nodeMap := make(map[string]common.NodeConfig)
+		for _, n := range overallConfig.NodeConfig {
+			nodeMap[n.Name] = n
+		}
+		for _, name := range nodeNames {
+			node, ok := nodeMap[name]
+			if !ok {
+				panic(fmt.Sprintf("Node node defined: %v", name))
+			}
+			nodes = append(nodes, node)
+		}
+	}
 
-	mount := make(map[string]string)
-	mount[logPath(overallConfig)] = overallConfig.VMLogDir
-
-	nodeConfig := overallConfig.NodeConfig
 	services.GetMultipassService().Deploy(
-		overallConfig.NodeNum,
-		nodeConfig.CPU,
-		nodeConfig.MEM,
-		nodeConfig.DISK,
-		overallConfig.Image,
+		nodes,
 		overallConfig.CloudInit,
-		mount,
+		overallConfig.Image,
 	)
 }
 
