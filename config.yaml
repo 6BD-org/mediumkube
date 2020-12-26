@@ -1,11 +1,13 @@
-http-proxy: "http://172.16.2.16:3128"
-https-proxy: "http://172.16.2.16:3128"
+http-proxy: "http://10.45.126.1:1091"
+https-proxy: "http://10.45.126.1:1091"
+# It is suggested that you use multipass bridge network 
+# in case of ip change
 
 pub-key-dir: "/home/temp/.ssh/cloud.pub"
 priv-key-dir: "/home/temp/.ssh/cloud"
 host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
 
-image: "file:///home/temp/u_20.04.img"
+image: "file:///home/makaveli/Desktop/mediumkube/ubuntu.img"
 cloud-init: "./cloud-init.yaml"
 
 nodes:
@@ -14,14 +16,14 @@ nodes:
     mem: "2G"
     disk: "20G"
     mounts:
-      - host: /home/temp/mediumkube/vmlogs
+      - host: /home/temp/mediumkube/vmlogs/node1
         vm: /var/log/bootstrap
   - name: node2
     cpu: "2"
     mem: "2G"
     disk: "20G"
     mounts:
-      - host: /home/temp/mediumkube/vmlogs
+      - host: /home/temp/mediumkube/vmlogs/node2
         vm: /var/log/bootstrap
 
 # see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/

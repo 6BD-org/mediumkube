@@ -9,6 +9,7 @@ import (
 	"mediumkube/utils"
 
 	appsV1 "k8s.io/api/apps/v1"
+	appsV1beta1 "k8s.io/api/apps/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -87,6 +88,18 @@ func (service KubernetesService) Apply(file string) {
 			if ok {
 				log.Println("Installing K8s resource StatefulSets: ", field.Name)
 				client.AppsV1().StatefulSets(field.Namespace).Create(ctx, field, v1.CreateOptions{})
+			}
+		case *coreV1.Service:
+			field, ok := v.(*coreV1.Service)
+			if ok {
+				log.Println("Installing K8s resource Service: ", field.Name)
+				client.CoreV1().Services(field.Namespace).Create(ctx, field, v1.CreateOptions{})
+			}
+		case *appsV1beta1.Deployment:
+			field, ok := v.(*appsV1beta1.Deployment)
+			if ok {
+				log.Println("Installing K8s resource Deployment: ", field.Name)
+				client.AppsV1beta1().Deployments(field.Namespace).Create(ctx, field, v1.CreateOptions{})
 			}
 		}
 	}

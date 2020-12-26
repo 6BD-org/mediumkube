@@ -1,0 +1,23 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: A
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: A
+  template:
+    metadata:
+      labels:
+        app: A
+    spec:
+      containers:
+        - name: service
+          env:
+            - name: DEPENDENCIES
+              value: B,C
+          image: wylswz/cnbase-spring
+          imagePullPolicy: IfNotPresent
+          ports:
+            - web: 8080

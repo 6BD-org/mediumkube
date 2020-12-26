@@ -52,8 +52,6 @@ write_files:
       
       # If you need proxy to install kubernetes
       # Set following variables
-      export http_proxy={{ .HTTPProxy }}
-      export https_proxy={{ .HTTPSProxy }}
       
       curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
@@ -75,9 +73,11 @@ write_files:
 
 
 runcmd:
+  - export http_proxy={{ .HTTPProxy }}
+  - export https_proxy={{ .HTTPSProxy }}
   - mkdir -p /var/log/bootstrap
   - sudo mkdir -p /etc/systemd/system/docker.service.d
-  - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh
+  - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh >> /var/log/bootstrap/init_kubeadm.log
   - sh /run/bootstrap/init_network.sh >> /var/log/bootstrap/init_network.log
   - sh /run/bootstrap/init_kube.sh >> /var/log/bootstrap/init_kubeadm.log
   - sudo systemctl daemon-reload

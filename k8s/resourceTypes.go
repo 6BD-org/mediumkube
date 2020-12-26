@@ -21,6 +21,8 @@ func NewResourceMapping() map[string]interface{} {
 	resourceType["ConfigMap"] = &coreV1.ConfigMap{}
 	resourceType["DaemonSet"] = &appsV1.DaemonSet{}
 	resourceType["StatefulSet"] = &appsV1.StatefulSet{}
+	resourceType["Deployment"] = &v1beta1.Deployment{}
+	resourceType["Service"] = &coreV1.Service{}
 
 	return resourceType
 }
