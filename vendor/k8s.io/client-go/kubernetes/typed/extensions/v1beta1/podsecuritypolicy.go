@@ -37,7 +37,7 @@ type PodSecurityPoliciesGetter interface {
 }
 
 // PodSecurityPolicyInterface has methods to work with PodSecurityPolicy resources.
-type PodSecurityPolicyInterface interface { 
+type PodSecurityPolicyInterface interface {
 	Create(ctx context.Context, podSecurityPolicy *v1beta1.PodSecurityPolicy, opts v1.CreateOptions) (*v1beta1.PodSecurityPolicy, error)
 	Update(ctx context.Context, podSecurityPolicy *v1beta1.PodSecurityPolicy, opts v1.UpdateOptions) (*v1beta1.PodSecurityPolicy, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
