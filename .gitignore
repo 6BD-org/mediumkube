@@ -7,3 +7,5 @@ main
 cloud-init.yaml
 
 mediumkube
+
+examples/**/target/

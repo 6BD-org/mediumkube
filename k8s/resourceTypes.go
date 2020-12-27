@@ -11,7 +11,7 @@ type KindIdentifier struct {
 	Kind string `yaml:"kind"`
 }
 
-// New create a new resource mapping
+// NewResourceMapping New create a new resource mapping
 func NewResourceMapping() map[string]interface{} {
 	var resourceType = make(map[string]interface{})
 	resourceType["PodSecurityPolicy"] = &v1beta1.PodSecurityPolicy{}
@@ -21,7 +21,7 @@ func NewResourceMapping() map[string]interface{} {
 	resourceType["ConfigMap"] = &coreV1.ConfigMap{}
 	resourceType["DaemonSet"] = &appsV1.DaemonSet{}
 	resourceType["StatefulSet"] = &appsV1.StatefulSet{}
-	resourceType["Deployment"] = &v1beta1.Deployment{}
+	resourceType["Deployment"] = &appsV1.Deployment{}
 	resourceType["Service"] = &coreV1.Service{}
 
 	return resourceType
