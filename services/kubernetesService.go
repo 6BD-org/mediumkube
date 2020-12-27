@@ -88,6 +88,23 @@ func (service KubernetesService) Apply(file string) {
 				log.Println("Installing K8s resource StatefulSets: ", field.Name)
 				client.AppsV1().StatefulSets(field.Namespace).Create(ctx, field, v1.CreateOptions{})
 			}
+		case *coreV1.Service:
+			field, ok := v.(*coreV1.Service)
+			if ok {
+				log.Println("Installing K8s resource Service: ", field.Name)
+				client.CoreV1().Services(field.Namespace).Create(ctx, field, v1.CreateOptions{})
+			}
+		case *appsV1.Deployment:
+			field, ok := v.(*appsV1.Deployment)
+			if ok {
+				log.Println("Installing K8s resource Deployment: ", field.Name)
+				_, err := client.AppsV1().Deployments(field.Namespace).Create(ctx, field, v1.CreateOptions{})
+				if err != nil {
+					log.Println("Error installing resource", err)
+				}
+			}
+		default:
+			log.Fatal("Unsupported type. Please install manually")
 		}
 	}
 }
