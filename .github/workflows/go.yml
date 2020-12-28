@@ -28,8 +28,20 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+        sudo apt install libvirt-dev
 
     - name: Test
       run: go test ./tests/...
     - name: Build
-      run: ./hack/build.sh
+      run: go build
+
+    - name: setup-jdk
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: Example-sampleServer
+      run: mvn package -f example/service-discovery/pom.xml
+
+
+
