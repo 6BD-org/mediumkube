@@ -1,5 +1,5 @@
-http-proxy: "http://10.45.126.1:1091"
-https-proxy: "http://10.45.126.1:1091"
+http-proxy: "http://127.0.0.1:1091"
+https-proxy: "http://127.0.0.1:1091"
 # It is suggested that you use multipass bridge network 
 # in case of ip change
 
