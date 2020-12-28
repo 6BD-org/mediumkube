@@ -15,8 +15,8 @@ ssh_keys:
 
 # Set up software sources
 apt:
-  http_proxy: {{ .HTTPProxy }}
-  https_proxy: {{ .HTTPSProxy }}
+  {{if .HTTPProxy}}http_proxy: {{ .HTTPProxy }}{{end}}
+  {{if .HTTPSProxy}}https_proxy: {{ .HTTPSProxy }}{{end}}
   primary:
     - arches: [default]
       uri: http://mirrors.tuna.tsinghua.edu.cn/ubuntu/
@@ -65,16 +65,16 @@ write_files:
 
   - content: |
       [Service]
-      Environment="HTTP_PROXY={{ .HTTPProxy }}"
-      Environment="HTTPS_PROXY={{ .HTTPSProxy }}"
+      {{if .HTTPProxy}}Environment="HTTP_PROXY={{ .HTTPProxy }}"{{end}}
+      {{if .HTTPSProxy}}Environment="HTTPS_PROXY={{ .HTTPSProxy }}"{{end}}
     path: /etc/systemd/system/docker.service.d/http-proxy.conf
     permissions: '0666'
 
 
 
 runcmd:
-  - export http_proxy={{ .HTTPProxy }}
-  - export https_proxy={{ .HTTPSProxy }}
+  {{if .HTTPProxy}}- export http_proxy={{ .HTTPProxy }}{{end}}
+  {{if .HTTPSProxy}}- export https_proxy={{ .HTTPSProxy }}{{end}}
   - mkdir -p /var/log/bootstrap
   - sudo mkdir -p /etc/systemd/system/docker.service.d
   - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh >> /var/log/bootstrap/init_kubeadm.log
