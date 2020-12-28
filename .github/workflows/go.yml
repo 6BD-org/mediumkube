@@ -35,13 +35,5 @@ jobs:
     - name: Build
       run: go build
 
-    - name: setup-jdk
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-
-    - name: Example-sampleServer
-      run: mvn package -f example/service-discovery/pom.xml
-
 
 
