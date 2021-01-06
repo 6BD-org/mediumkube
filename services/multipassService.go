@@ -75,12 +75,6 @@ func (service MultipassService) Exec(node string, command []string, sudo bool) s
 	return out
 }
 
-// ExecUnchecked Exec a command on a virtual machine without checking error
-func (service MultipassService) ExecUnchecked(node string, command []string, sudo bool) (string, error) {
-
-	return "", nil
-}
-
 // Transfer transfer file between vm and host machine
 func (service MultipassService) Transfer(src string, tgt string) {
 	transferCmd := exec.Command("multipass", "transfer", src, tgt)
@@ -110,6 +104,12 @@ func (service MultipassService) ExecScript(node string, script string, sudo bool
 	service.Exec(node, rmCmd, false)
 
 }
+
+func (service MultipassService) Purge(node string) {}
+
+func (service MultipassService) Start(node string) {}
+
+func (service MultipassService) Stop(node string) {}
 
 func init() {
 	InitMultipassService(MultipassService{

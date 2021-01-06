@@ -26,12 +26,22 @@ type KubeInit struct {
 	Args []Arg `yaml:"args"`
 }
 
+type Bridge struct {
+	Name      string   `yaml:"name"`
+	Alias     string   `yaml:"alias"`
+	Inet      string   `yaml:"inet"`
+	Broadcast string   `yaml:"broadcast"`
+	Slaves    []string `yaml:"slaves"`
+}
+
 // OverallConfig Over-all configs
 /*
 This config is in same file with Template config, but when parsed,
 the template part will be ignored.
 */
 type OverallConfig struct {
+	Backend         string       `yaml:"backend"`
+	Bridge          Bridge       `yaml:"bridge"`
 	NodeConfig      []NodeConfig `yaml:"nodes"`
 	Image           string       `yaml:"image"`
 	CloudInit       string       `yaml:"cloud-init"`

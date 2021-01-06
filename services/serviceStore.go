@@ -27,3 +27,14 @@ func InitLibvritService(ls LibvirtService) {
 func GetLibvirtService() LibvirtService {
 	return libvirtService
 }
+
+func GetNodeManager(backend string) NodeManager {
+	switch backend {
+	case "multipass":
+		return multipassService
+	case "libvirt":
+		return libvirtService
+	default:
+		panic("Unsupported type")
+	}
+}

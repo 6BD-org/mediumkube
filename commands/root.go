@@ -58,6 +58,8 @@ func (handler RootHandler) Handle(args []string) {
 			CMD["join"].Handle(args[1:])
 		case "apply":
 			CMD["apply"].Handle(args[1:])
+		case "bridge":
+			CMD["bridge"].Handle(args[1:])
 		case "help":
 			handler.Help()
 		default:

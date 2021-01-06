@@ -1,5 +1,19 @@
-http-proxy: "http://127.0.0.1:1091"
-https-proxy: "http://127.0.0.1:1091"
+# Backend can be multipass or libvirt
+backend: "multipass"
+
+bridge:
+  name: "mediumkube-br0"
+  inet: 10.141.114.1/24
+  netmask: 255.255.255.0
+  # Add your network interfaces to slaves
+  slaves:
+    - enp0s31f6
+    - wlp2s0
+    
+
+
+http-proxy: "http://10.135.114.1:1091"
+https-proxy: "http://10.135.114.1:1091"
 # It is suggested that you use multipass bridge network 
 # in case of ip change
 
@@ -7,7 +21,7 @@ pub-key-dir: "/home/temp/.ssh/cloud.pub"
 priv-key-dir: "/home/temp/.ssh/cloud"
 host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
 
-image: "file:///home/makaveli/Desktop/mediumkube/ubuntu.img"
+image: "file:///home/temp/u_20.04.img"
 cloud-init: "./cloud-init.yaml"
 
 nodes:
