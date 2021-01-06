@@ -6,6 +6,13 @@ type VolumeMount struct {
 	VM   string `yaml:"vm"`
 }
 
+// Network config for node in libvirt mode
+type Network struct {
+	Name           string `yaml:"name"`
+	IP             string `yaml:"ip"`
+	AttachedBridge string `yaml:"attached-bridge"`
+}
+
 // NodeConfig Config for each noed. "node" field  in config yaml
 type NodeConfig struct {
 	Name         string        `yaml:"name"`
@@ -13,6 +20,9 @@ type NodeConfig struct {
 	MEM          string        `yaml:"mem"`
 	DISK         string        `yaml:"disk"`
 	VolumeMounts []VolumeMount `yaml:"mounts"`
+	Network      Network       `yaml:"network"`
+	DiskImage    string        `yaml:"disk-image"` // location of virtual disk
+	CDROM        string        `yaml:"cd-rom"`     // .iso file
 }
 
 // Arg Argument

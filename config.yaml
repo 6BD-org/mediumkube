@@ -1,5 +1,5 @@
 # Backend can be multipass or libvirt
-backend: "multipass"
+backend: "libvirt"
 
 bridge:
   name: "mediumkube-br0"
@@ -12,8 +12,8 @@ bridge:
     
 
 
-http-proxy: "http://10.135.114.1:1091"
-https-proxy: "http://10.135.114.1:1091"
+http-proxy: "http://10.141.114.1:1091"
+https-proxy: "http://10.141.114.1:1091"
 # It is suggested that you use multipass bridge network 
 # in case of ip change
 
@@ -29,6 +29,12 @@ nodes:
     cpu: "2"
     mem: "2G"
     disk: "20G"
+    network: # for libvirt
+      attached-bridge: "mediumkube-br0"
+      name: node1-eth0
+      ip: 10.141.114.18
+    disk-image: /home/temp/mediumkube/node1.img # for libvirt
+    cd-rom: /home/temp/mediumkube/ubuntu.img # for libvirt
     mounts:
       - host: /home/temp/mediumkube/vmlogs/node1
         vm: /var/log/bootstrap
@@ -36,9 +42,26 @@ nodes:
     cpu: "2"
     mem: "2G"
     disk: "20G"
+    network: # for libvirt
+      attached-bridge: "mediumkube-br0"
+      name: node2-eth0
+      ip: 10.141.114.19
+    disk-image: /home/temp/mediumkube/node2.img # for libvirt
+    cd-rom: /home/temp/mediumkube/ubuntu.img # for libvirt
     mounts:
       - host: /home/temp/mediumkube/vmlogs/node2
         vm: /var/log/bootstrap
+
+  - name: node3
+    cpu: "2"
+    mem: "2G"
+    disk: "20G"
+    network: # for libvirt
+      attached-bridge: "mediumkube-br0"
+      name: node3-eth0
+      ip: 10.141.114.19
+    disk-image: /home/temp/mediumkube/node3.img # for libvirt
+    cd-rom: /home/temp/mediumkube/ubuntu.img # for libvirt
 
 # see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
 # see https://coreos.com/flannel/docs/latest/kubernetes.html for Flannel guides
