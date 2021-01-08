@@ -8,9 +8,8 @@ type VolumeMount struct {
 
 // Network config for node in libvirt mode
 type Network struct {
-	Name           string `yaml:"name"`
-	IP             string `yaml:"ip"`
-	AttachedBridge string `yaml:"attached-bridge"`
+	Name string `yaml:"name"`
+	IP   string `yaml:"ip"`
 }
 
 // NodeConfig Config for each noed. "node" field  in config yaml
@@ -37,11 +36,10 @@ type KubeInit struct {
 }
 
 type Bridge struct {
-	Name      string   `yaml:"name"`
-	Alias     string   `yaml:"alias"`
-	Inet      string   `yaml:"inet"`
-	Broadcast string   `yaml:"broadcast"`
-	Slaves    []string `yaml:"slaves"`
+	Name      string `yaml:"name"`
+	Alias     string `yaml:"alias"`
+	Inet      string `yaml:"inet"`
+	Broadcast string `yaml:"broadcast"`
 }
 
 // OverallConfig Over-all configs

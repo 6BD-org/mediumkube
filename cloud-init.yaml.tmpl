@@ -1,7 +1,4 @@
-
-# Setup identical ssh key for host machine
-
-
+#cloud-config
 ssh_authorized_keys:
   - {{ .PubKey }}
   - {{ .HostPubKey }}

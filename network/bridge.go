@@ -18,6 +18,7 @@ func CreateNetBridge(bridge common.Bridge) error {
 	la := netlink.NewLinkAttrs()
 	la.Alias = bridge.Alias
 	la.Name = bridge.Name
+
 	br := &netlink.Bridge{
 		LinkAttrs: la,
 	}
@@ -72,6 +73,17 @@ func RemoveNetBridge(bridge common.Bridge) error {
 
 }
 
+/*
+mpqemubr0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.135.114.1  netmask 255.255.255.0  broadcast 10.135.114.255
+        inet6 fe80::439:e7ff:fe09:6d9a  prefixlen 64  scopeid 0x20<link>
+        ether 06:39:e7:09:6d:9a  txqueuelen 1000  (Ethernet)
+        RX packets 10662  bytes 869134 (869.1 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 25014  bytes 26252137 (26.2 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+*/
 // ShowBridge show details of bridge in stdout
 func ShowBridge(bridge common.Bridge) {
 	var lnk netlink.Link

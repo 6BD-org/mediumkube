@@ -66,6 +66,8 @@ func (handler RootHandler) Handle(args []string) {
 			CMD["apply"].Handle(args[1:])
 		case "bridge":
 			CMD["bridge"].Handle(args[1:])
+		case "purge":
+			CMD["purge"].Handle(args[1:])
 		case "help":
 			handler.Help()
 		default:
