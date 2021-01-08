@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -20,6 +21,12 @@ func ReadByte(path string) []byte {
 	data, err := ioutil.ReadFile(path)
 	CheckErr(err)
 	return data
+}
+
+// WriteStr to file or die
+func WriteStr(path string, content string, perm os.FileMode) {
+	err := ioutil.WriteFile(path, []byte(content), perm)
+	CheckErr(err)
 }
 
 // GetFileName get file name from its full path
@@ -53,4 +60,17 @@ func WalkDir(path string) []string {
 	})
 
 	return files
+}
+
+// Copy a file or die
+func Copy(src string, tgt string) {
+	srcFile, err := os.Open(src)
+	CheckErr(err)
+	tgtFile, err := os.Create(tgt)
+	CheckErr(err)
+	defer srcFile.Close()
+	defer tgtFile.Close()
+
+	_, err = io.Copy(tgtFile, srcFile)
+	CheckErr(err)
 }

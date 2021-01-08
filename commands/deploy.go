@@ -50,7 +50,7 @@ func (handler DeployHandler) Handle(args []string) {
 		}
 	}
 
-	services.GetMultipassService().Deploy(
+	services.GetNodeManager(overallConfig.Backend).Deploy(
 		nodes,
 		overallConfig.CloudInit,
 		overallConfig.Image,

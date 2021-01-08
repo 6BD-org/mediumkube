@@ -111,6 +111,8 @@ func (service MultipassService) Start(node string) {}
 
 func (service MultipassService) Stop(node string) {}
 
+func (service MultipassService) List() {}
+
 func init() {
 	InitMultipassService(MultipassService{
 		OverallConfig: configurations.Config(),
