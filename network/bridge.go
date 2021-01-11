@@ -2,20 +2,16 @@ package network
 
 import (
 	"fmt"
-	"github.com/coreos/go-iptables/iptables"
-	"github.com/vishvananda/netlink"
 	"log"
 	"mediumkube/common"
 	"mediumkube/utils"
+
+	"github.com/vishvananda/netlink"
 )
 
 const (
 	ipv4 int = 1
 )
-
-func enableForwarding(bridge common.Bridge) error {
-	cmd := iptables.New()
-}
 
 // CreateNetBridge from config
 func CreateNetBridge(bridge common.Bridge) error {
