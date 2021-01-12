@@ -35,11 +35,13 @@ type KubeInit struct {
 	Args []Arg `yaml:"args"`
 }
 
+// Bridge that establish connections between vms
 type Bridge struct {
 	Name      string `yaml:"name"`
 	Alias     string `yaml:"alias"`
 	Inet      string `yaml:"inet"`
 	Broadcast string `yaml:"broadcast"`
+	Host      string `yaml:"host"` // NIC on host machine
 }
 
 // OverallConfig Over-all configs
