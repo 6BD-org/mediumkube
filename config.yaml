@@ -2,7 +2,7 @@
 backend: "libvirt"
 
 bridge:
-  name: "mediumkube-br0"
+  name: "mpqemubr0"
   inet: 10.114.114.1/24
   host: "enp0s31f6:"
 

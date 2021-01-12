@@ -163,7 +163,7 @@ func processAddr(bridge common.Bridge) {
 	}
 }
 
-func createRuleIfNotExists(chain string, rules ...string) {
+func insertRuleIfNotExists(chain string, rules ...string) {
 	iptable, err := iptables.New()
 	if err != nil {
 		klog.Error(err)
@@ -182,17 +182,17 @@ func createRuleIfNotExists(chain string, rules ...string) {
 
 	if !exists {
 		klog.Info("Appending: ", rules)
-		iptable.Append(table, chain, rules...)
+		iptable.Insert(table, chain, 1, rules...)
 	}
 }
 
 func processIptables(bridge common.Bridge) {
-	createRuleIfNotExists("FORWARD", _forwardRuleOut(bridge)...)
-	createRuleIfNotExists("FORWARD", _forwardRuleIn(bridge)...)
-	createRuleIfNotExists("FORWARD", _forwardRejectICMPUnreachableIn(bridge)...)
-	createRuleIfNotExists("FORWARD", _forwardRejectICMPUnreachableOut(bridge)...)
-	createRuleIfNotExists("INPUT", _dhcpIn(bridge)...)
-	createRuleIfNotExists("OUTPUT", _dhcpOut(bridge)...)
+	insertRuleIfNotExists("FORWARD", _forwardRuleOut(bridge)...)
+	insertRuleIfNotExists("FORWARD", _forwardRuleIn(bridge)...)
+	insertRuleIfNotExists("FORWARD", _forwardRejectICMPUnreachableIn(bridge)...)
+	insertRuleIfNotExists("FORWARD", _forwardRejectICMPUnreachableOut(bridge)...)
+	insertRuleIfNotExists("INPUT", _dhcpIn(bridge)...)
+	insertRuleIfNotExists("OUTPUT", _dhcpOut(bridge)...)
 }
 
 func main() {

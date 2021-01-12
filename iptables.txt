@@ -10,6 +10,7 @@ ufw-after-input  all  --  anywhere             anywhere
 ufw-after-logging-input  all  --  anywhere             anywhere            
 ufw-reject-input  all  --  anywhere             anywhere            
 ufw-track-input  all  --  anywhere             anywhere            
+ACCEPT     udp  --  anywhere             anywhere             udp dpt:bootps
 
 Chain FORWARD (policy DROP)
 target     prot opt source               destination         
@@ -33,6 +34,10 @@ ufw-reject-forward  all  --  anywhere             anywhere
 ufw-track-forward  all  --  anywhere             anywhere            
 REJECT     all  --  anywhere             anywhere             /* generated for Multipass network mpqemubr0 */ reject-with icmp-port-unreachable
 REJECT     all  --  anywhere             anywhere             /* generated for Multipass network mpqemubr0 */ reject-with icmp-port-unreachable
+ACCEPT     all  --  anywhere             10.114.114.0/24     
+ACCEPT     all  --  10.114.114.0/24      anywhere            
+REJECT     all  --  anywhere             anywhere             reject-with icmp-port-unreachable
+REJECT     all  --  anywhere             anywhere             reject-with icmp-port-unreachable
 
 Chain OUTPUT (policy ACCEPT)
 target     prot opt source               destination         
@@ -46,6 +51,7 @@ ufw-after-output  all  --  anywhere             anywhere
 ufw-after-logging-output  all  --  anywhere             anywhere            
 ufw-reject-output  all  --  anywhere             anywhere            
 ufw-track-output  all  --  anywhere             anywhere            
+ACCEPT     udp  --  anywhere             anywhere             udp spt:bootps
 
 Chain DOCKER (1 references)
 target     prot opt source               destination         
