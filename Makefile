@@ -1,3 +1,6 @@
+test:
+	go test ./tests/...
+
 mediumkube:
 	go build -o mediumkube main.go
 
@@ -7,4 +10,8 @@ mediumkubed:
 all: mediumkube mediumkubed
 
 clean:
-	rm ./mediumkube ./mediumkubed
+	rm -f ./mediumkube ./mediumkubed
+
+daemon: clean mediumkubed
+	sudo ./mediumkubed
+
