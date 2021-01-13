@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/libvirt/libvirt-go"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -37,6 +38,7 @@ local-hostname: %v`
 
 var (
 	fileToClean = make([]string, 0)
+	stateMap    = make(map[libvirt.DomainState]string)
 )
 
 func cleanUp() {
@@ -246,14 +248,20 @@ func (service LibvirtService) ExecScript(node string, script string, sudo bool) 
 // List domains
 func (service LibvirtService) List() {
 	defer service.conn.Close()
-	dms, err := service.conn.ListAllDomains(libvirt.CONNECT_LIST_DOMAINS_ACTIVE)
-	utils.CheckErr(err)
-	fmt.Println("Name \t IP \t Status \t Reason")
-	for _, d := range dms {
-		var node common.NodeConfig = common.NodeConfig{}
+	dms, err := service.conn.ListAllDomains(libvirt.CONNECT_LIST_DOMAINS_PERSISTENT)
 
-		domainState, r, _ := d.GetState()
-		fmt.Printf("%v \t %v \t %v \n", node.Name, domainState, r)
+	utils.CheckErr(err)
+	fmt.Println("Name \t Status \t Reason")
+	for _, d := range dms {
+		name, _ := d.GetName()
+		domainState, r, err := (&d).GetState()
+		stateStr := ""
+		if err != nil {
+			klog.Error(err)
+		} else {
+			stateStr = stateMap[domainState]
+		}
+		fmt.Printf("%v \t %v \t %v \n", name, stateStr, r)
 	}
 }
 
@@ -267,4 +275,13 @@ func init() {
 			conn:   conn,
 		},
 	)
+
+	stateMap[libvirt.DOMAIN_NOSTATE] = "NOSTATE"
+	stateMap[libvirt.DOMAIN_RUNNING] = "RUNNING"
+	stateMap[libvirt.DOMAIN_BLOCKED] = "BLOCKED"
+	stateMap[libvirt.DOMAIN_PAUSED] = "PAUSED"
+	stateMap[libvirt.DOMAIN_SHUTDOWN] = "SHUTDOWN"
+	stateMap[libvirt.DOMAIN_CRASHED] = "CRASHED"
+	stateMap[libvirt.DOMAIN_PMSUSPENDED] = "PMSUSPENDED"
+	stateMap[libvirt.DOMAIN_SHUTOFF] = "SHUTOFF"
 }
