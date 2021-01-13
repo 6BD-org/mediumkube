@@ -49,18 +49,6 @@ func bridgeIP(bridge common.Bridge) string {
 	return strings.Split(bridge.Inet, "/")[0]
 }
 
-func bridgeSubNet(bridge common.Bridge) string {
-	ip := strings.Split(bridge.Inet, "/")[0]
-	builder := strings.Builder{}
-	ipSplitted := strings.Split(ip, ".")
-	for i := 0; i < 3; i++ {
-		builder.WriteString(ipSplitted[i])
-		builder.WriteString(".")
-	}
-	res := builder.String()
-	return res[:len(res)-1]
-}
-
 // func networkXML(name string, bridge common.Bridge) string {
 // 	return fmt.Sprintf(
 // 		networkTemplate,
