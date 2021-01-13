@@ -1,3 +1,16 @@
+# Set up a k8s cluster using libvirt
+
+It is planned that `mediunkube` no-longer depends on multipass by force, instead, multipass becomes an optional backend. Multipass is an active project, which is good, but it becomes difficult to catch up with. Therefore we move to `libvirt`, which is slower in release speed, and relatively stable and flexible.
+
+## How does it work?
+
+In order to make out system working, it is preferred that we can have a virtual network controlled by mediumkube. Therefore we introduce a daemon called `mediumkubed`, that automatically configures virtual network and iptable entries for us. The logic of `mediumkubed` is like this 
+![](./daemon/mediumkubed-design.png)
+
+
+
+
+
 # Setup a k8s cluster using multipass
 
 This is a very simple toolkit that helps setup a K8s cluster easily (In order to learn some network knowledges about K8s)

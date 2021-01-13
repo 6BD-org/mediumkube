@@ -2,15 +2,15 @@
 backend: "libvirt"
 
 bridge:
-  name: "mediumkube-br0"
+  name: "mpqemubr0"
   inet: 10.114.114.1/24
   host: "enp0s31f6:"
 
     
 
 
-http-proxy: "http://172.16.2.16:3128"
-https-proxy: "http://172.16.2.16:3128"
+http-proxy: "http://10.114.114.1:1091"
+https-proxy: "http://10.114.114.1:1091"
 # It is suggested that you use multipass bridge network 
 # in case of ip change
 

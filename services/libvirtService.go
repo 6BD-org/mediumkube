@@ -17,18 +17,18 @@ import (
 )
 
 const (
-	networkTemplate string = `
-<network>
-	<name>%v</name>
-	<forward/>
-	<bridge name='%v'/>
-	<ip address='%v.1' netmask='255.255.255.0'>
-		<dhcp>
-			<range start='%v.2' end='%v.254'></range>
-		</dhcp>
-	</ip>
-</network>
-`
+	// 	networkTemplate string = `
+	// <network>
+	// 	<name>%v</name>
+	// 	<forward/>
+	// 	<bridge name='%v'/>
+	// 	<ip address='%v.1' netmask='255.255.255.0'>
+	// 		<dhcp>
+	// 			<range start='%v.2' end='%v.254'></range>
+	// 		</dhcp>
+	// 	</ip>
+	// </network>
+	// `
 
 	cloudInitMetaTemplate string = `
 instance-id: id-%v
@@ -61,34 +61,34 @@ func bridgeSubNet(bridge common.Bridge) string {
 	return res[:len(res)-1]
 }
 
-func networkXML(name string, bridge common.Bridge) string {
-	return fmt.Sprintf(
-		networkTemplate,
-		name,
-		bridge.Name,
-		bridgeSubNet(bridge),
-		bridgeSubNet(bridge),
-		bridgeSubNet(bridge),
-	)
-}
+// func networkXML(name string, bridge common.Bridge) string {
+// 	return fmt.Sprintf(
+// 		networkTemplate,
+// 		name,
+// 		bridge.Name,
+// 		bridgeSubNet(bridge),
+// 		bridgeSubNet(bridge),
+// 		bridgeSubNet(bridge),
+// 	)
+// }
 
 func meta(nodeName string) string {
 	return fmt.Sprintf(cloudInitMetaTemplate, nodeName, nodeName)
 }
 
-func (service LibvirtService) createNetwork(name string, bridge common.Bridge) error {
-	netDestroyCmd := exec.Command(
-		"virsh",
-		"net-destroy",
-		name,
-	)
-	utils.ExecWithStdio(netDestroyCmd)
+// func (service LibvirtService) createNetwork(name string, bridge common.Bridge) error {
+// 	netDestroyCmd := exec.Command(
+// 		"virsh",
+// 		"net-destroy",
+// 		name,
+// 	)
+// 	utils.ExecWithStdio(netDestroyCmd)
 
-	xml := networkXML(name, bridge)
-	log.Println(xml)
-	_, err := service.conn.NetworkCreateXML(xml)
-	return err
-}
+// 	xml := networkXML(name, bridge)
+// 	log.Println(xml)
+// 	_, err := service.conn.NetworkCreateXML(xml)
+// 	return err
+// }
 
 func (service LibvirtService) createCloudInitCD(cloudInit string, nodeName string) string {
 
@@ -142,7 +142,7 @@ func (service LibvirtService) createDomain(name string, cpu string, memory strin
 		"--disk", fmt.Sprintf("path=%v", image),
 		"--disk", fmt.Sprintf("path=%v,device=cdrom", cloudInitImg),
 		// "--disk", fmt.Sprintf("path=%v,bus=%v,size=%v", diskImage, "virtio", ,
-		"--network", fmt.Sprintf("network=%v", net),
+		"--network", fmt.Sprintf("bridge=%v", net),
 		"--check", "path_in_use=off",
 		"--nographics",
 	)
@@ -162,15 +162,6 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string
 	for _, n := range nodes {
 		// Step 0: Cloud init iso
 		cloudImage := service.createCloudInitCD(cloudInit, n.Name)
-		// Step1 Create network
-		log.Println("Creating network...")
-		err := service.createNetwork(
-			n.Network.Name,
-			service.config.Bridge,
-		)
-		if err != nil {
-			panic(err)
-		}
 
 		// Step2 Copy image
 		srcImg := service.config.Image
@@ -186,7 +177,7 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string
 			n.CPU,
 			n.MEM,
 			n.DISK,
-			n.Network.Name,
+			service.config.Bridge.Name,
 			tgtImg,
 			cloudImage,
 		)
