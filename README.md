@@ -18,6 +18,39 @@ Please refer to [this](./daemon/README.md)
 ## Configuration references
 Please refer to [this](./docs/config.md) for configurations and [this](./docs/config-libvirt.md) for libvirt-specific configurations
 
+## Get started
+Node that mediumkube isn't a well packaged software right now, so is's not available in any kind of package manager. You will need to build the project and run binaries manually.
+
+To compile the project
+
+```bash
+$ make clean
+$ make all
+```
+This command will produce two executables, which are `mediumkube` and `mediumkubed`. First of all, you need to start `mediumkubed` and make sure it keeps running. Once you stop it, it will clean up configurations so you will lose ip table entries.
+
+```bash
+
+$ ./mediumkubed
+
+```
+
+Then you can deploy the machine
+
+```bash
+$ ./mediumkube deploy node1
+```
+
+This will deploy `node1` defined in your config file. The deployment process will attach you to the stdio of virtual machine, if you wanna escape, use `ctrl + [`.
+
+To purge the machine that is installed, use 
+```bash
+
+$ ./mediumkube purge node1
+
+```
+
+Please note that you cannot purge a machine that is created by another backend! So if you want to purge a multipass machine, either use `multipass` command or change backend in config file.
 
 # Setup a k8s cluster using multipass
 
