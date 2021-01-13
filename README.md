@@ -41,7 +41,7 @@ Then you can deploy the machine
 $ ./mediumkube deploy node1
 ```
 
-This will deploy `node1` defined in your config file. The deployment process will attach you to the stdio of virtual machine, if you wanna escape, use `ctrl + [`.
+This will deploy `node1` defined in your config file. The deployment process will attach you to the stdio of virtual machine, if you wanna escape, use `ctrl + ]`.
 
 To purge the machine that is installed, use 
 ```bash

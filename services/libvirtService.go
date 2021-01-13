@@ -197,10 +197,23 @@ func (service LibvirtService) Purge(node string) {
 }
 
 // Start start a domain
-func (service LibvirtService) Start(node string) {}
+func (service LibvirtService) Start(node string) {
+	cmd := exec.Command(
+		"virsh", "start", node,
+	)
+	_, err := utils.ExecWithStdio(cmd)
+	utils.CheckErr(err)
+}
 
-// Stop stop a domain
-func (service LibvirtService) Stop(node string) {}
+// Stop stop a domain gracefully
+func (service LibvirtService) Stop(node string) {
+	cmd := exec.Command(
+		"virsh", "destroy", node, "--graceful",
+	)
+
+	_, err := utils.ExecWithStdio(cmd)
+	utils.CheckErr(err)
+}
 
 // Exec a command in a domain and return output
 func (service LibvirtService) Exec(node string, command []string, sudo bool) string {
