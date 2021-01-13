@@ -2,14 +2,64 @@
 
 It is planned that `mediunkube` no-longer depends on multipass by force, instead, multipass becomes an optional backend. Multipass is an active project, which is good, but it becomes difficult to catch up with. Therefore we move to `libvirt`, which is slower in release speed, and relatively stable and flexible.
 
-## How does it work?
+## Prerequests
 
-In order to make out system working, it is preferred that we can have a virtual network controlled by mediumkube. Therefore we introduce a daemon called `mediumkubed`, that automatically configures virtual network and iptable entries for us. The logic of `mediumkubed` is like this 
-![](./daemon/mediumkubed-design.png)
+- `qemu` The hardware emulator at lowest level, which does binary translation and emulates peripheral devices
+- `qemu-img` A tool used to manipulate disk images. MediumKube uses it to expand the image to desired size as user defined in yaml file
+- `libvirt` libvirt is a high-level library that provides APIs for convenient manipulations of domains, networks, etc... MediumKube uses these api via rpc and some commandline tools like `virsh`, `virt-install`
+- `kvm (optional)` A linux module that allows CPU to switch to guest state where privilege instructions fall back to hypervisor code. Using `kvm` along with `qemu` provides near-native performance because it avoids some unnecessary binary translations
 
+If you have trouble installing these software, just go ahead with `multipass` backend.
 
+## How does it work
 
+Please refer to [this](./daemon/README.md)
 
+## Configuration references
+Please refer to [this](./docs/config.md) for configurations and [this](./docs/config-libvirt.md) for libvirt-specific configurations
+
+## Get started
+Node that mediumkube isn't a well packaged software right now, so is's not available in any kind of package manager. You will need to build the project and run binaries manually.
+
+To compile the project
+
+```bash
+$ make clean
+$ make all
+```
+This command will produce two executables, which are `mediumkube` and `mediumkubed`. First of all, you need to start `mediumkubed` and make sure it keeps running. Once you stop it, it will clean up configurations so you will lose ip table entries.
+
+```bash
+
+$ ./mediumkubed
+
+```
+
+Then you can deploy the machine
+
+```bash
+$ ./mediumkube deploy node1
+```
+
+This will deploy `node1` defined in your config file. The deployment process will attach you to the stdio of virtual machine, if you wanna escape, use `ctrl + ]`.
+
+To purge the machine that is installed, use 
+```bash
+
+$ ./mediumkube purge node1
+
+```
+
+Please note that you cannot purge a machine that is created by another backend! So if you want to purge a multipass machine, either use `multipass` command or change backend in config file.
+
+## Use proxy
+
+Templating engine supports proxy. So you can access `http-proxy` in your config file by using {{ .HTTPProxy }}. You can use any proxy, but we suggest you to deploy your proxy to listen on bridge, so that the system becomes "portable", because your nodes won't suffer from configuration changes as the network environment changes due to DHCP or switching between wifis. 
+
+In order to set up proxy on bridge, there are two things to do. 
+
+1. You should open port on bridge for your proxy. You can use [this script](./hack/openport.sh)
+2. Just point the proxy server to the ip address of mediumkube bridge and you are good to go
 
 # Setup a k8s cluster using multipass
 

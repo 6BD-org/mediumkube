@@ -14,14 +14,10 @@ type Network struct {
 
 // NodeConfig Config for each noed. "node" field  in config yaml
 type NodeConfig struct {
-	Name         string        `yaml:"name"`
-	CPU          string        `yaml:"cpu"`
-	MEM          string        `yaml:"mem"`
-	DISK         string        `yaml:"disk"`
-	VolumeMounts []VolumeMount `yaml:"mounts"`
-	Network      Network       `yaml:"network"`
-	DiskImage    string        `yaml:"disk-image"` // location of virtual disk
-	CDROM        string        `yaml:"cd-rom"`     // .iso file
+	Name string `yaml:"name"`
+	CPU  string `yaml:"cpu"`
+	MEM  string `yaml:"mem"`
+	DISK string `yaml:"disk"`
 }
 
 // Arg Argument

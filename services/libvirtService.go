@@ -197,10 +197,23 @@ func (service LibvirtService) Purge(node string) {
 }
 
 // Start start a domain
-func (service LibvirtService) Start(node string) {}
+func (service LibvirtService) Start(node string) {
+	cmd := exec.Command(
+		"virsh", "start", node,
+	)
+	_, err := utils.ExecWithStdio(cmd)
+	utils.CheckErr(err)
+}
 
-// Stop stop a domain
-func (service LibvirtService) Stop(node string) {}
+// Stop stop a domain gracefully
+func (service LibvirtService) Stop(node string) {
+	cmd := exec.Command(
+		"virsh", "destroy", node, "--graceful",
+	)
+
+	_, err := utils.ExecWithStdio(cmd)
+	utils.CheckErr(err)
+}
 
 // Exec a command in a domain and return output
 func (service LibvirtService) Exec(node string, command []string, sudo bool) string {
@@ -230,41 +243,17 @@ func (service LibvirtService) ExecScript(node string, script string, sudo bool) 
 	service.Exec(node, rmCmd, false)
 }
 
-func getVirtNetworkForNode(node common.NodeConfig, networks []libvirt.Network) libvirt.Network {
-	for _, net := range networks {
-		virtNetName, err := net.GetName()
-		utils.CheckErr(err)
-		if virtNetName == node.Network.Name {
-			return net
-		}
-	}
-	return libvirt.Network{}
-}
-
 // List domains
 func (service LibvirtService) List() {
 	defer service.conn.Close()
-	config := configurations.Config()
 	dms, err := service.conn.ListAllDomains(libvirt.CONNECT_LIST_DOMAINS_ACTIVE)
-	utils.CheckErr(err)
-	networks, err := service.conn.ListAllNetworks(libvirt.CONNECT_LIST_NETWORKS_ACTIVE)
 	utils.CheckErr(err)
 	fmt.Println("Name \t IP \t Status \t Reason")
 	for _, d := range dms {
 		var node common.NodeConfig = common.NodeConfig{}
-		var network libvirt.Network = libvirt.Network{}
-		domainName, err := d.GetName()
-		utils.CheckErr(err)
 
-		for _, nd := range config.NodeConfig {
-			if nd.Name == domainName {
-				node = nd
-				network = getVirtNetworkForNode(node, networks)
-			}
-		}
-		netName, err := network.GetName()
-		domainState, r, err := d.GetState()
-		fmt.Printf("%v \t %v \t %v \t %v \n", node.Name, netName, domainState, r)
+		domainState, r, _ := d.GetState()
+		fmt.Printf("%v \t %v \t %v \n", node.Name, domainState, r)
 	}
 }
 
