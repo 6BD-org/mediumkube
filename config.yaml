@@ -23,28 +23,16 @@ nodes:
     cpu: "2"
     mem: "2G"
     disk: "20G"
-    network: # for libvirt
-      name: node1-eth0
-      ip: 10.141.114.18
-    disk-image: /home/temp/mediumkube/node1.img # for libvirt
 
   - name: node2
     cpu: "2"
     mem: "2G"
     disk: "20G"
-    network: # for libvirt
-      name: node2-eth0
-      ip: 10.141.114.19
-    disk-image: /home/temp/mediumkube/node2.img # for libvirt
 
   - name: node3
     cpu: "2"
     mem: "2G"
     disk: "20G"
-    network: # for libvirt
-      name: node3-eth0
-      ip: 10.141.114.19
-    disk-image: /home/temp/mediumkube/node3.img # for libvirt
 
 # see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
 # see https://coreos.com/flannel/docs/latest/kubernetes.html for Flannel guides

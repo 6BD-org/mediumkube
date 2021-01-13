@@ -2,13 +2,21 @@
 
 It is planned that `mediunkube` no-longer depends on multipass by force, instead, multipass becomes an optional backend. Multipass is an active project, which is good, but it becomes difficult to catch up with. Therefore we move to `libvirt`, which is slower in release speed, and relatively stable and flexible.
 
-## How does it work?
+## Prerequests
 
-In order to make out system working, it is preferred that we can have a virtual network controlled by mediumkube. Therefore we introduce a daemon called `mediumkubed`, that automatically configures virtual network and iptable entries for us. The logic of `mediumkubed` is like this 
-![](./daemon/mediumkubed-design.png)
+- `qemu` The hardware emulator at lowest level, which does binary translation and emulates peripheral devices
+- `qemu-img` A tool used to manipulate disk images. MediumKube uses it to expand the image to desired size as user defined in yaml file
+- `libvirt` libvirt is a high-level library that provides APIs for convenient manipulations of domains, networks, etc... MediumKube uses these api via rpc and some commandline tools like `virsh`, `virt-install`
+- `kvm (optional)` A linux module that allows CPU to switch to guest state where privilege instructions fall back to hypervisor code. Using `kvm` along with `qemu` provides near-native performance because it avoids some unnecessary binary translations
 
+If you have trouble installing these software, just go ahead with `multipass` backend.
 
+## How does it work
 
+Please refer to [this](./daemon/README.md)
+
+## Configuration references
+Please refer to [this](./docs/config.md) for configurations and [this](./docs/config-libvirt.md) for libvirt-specific configurations
 
 
 # Setup a k8s cluster using multipass
