@@ -54,7 +54,7 @@ Please note that you cannot purge a machine that is created by another backend! 
 
 ## Use proxy
 
-Templating engine supports proxy. So you can access `http-proxy` in your config file by using {{ .HTTPProxy }}. You can use any proxy, but we suggest you to deploy your proxy to listen on bridge, so that the system becomes "portable", because your nodes won't suffer from configuration changes as the network environment changes due to DHCP or switching between wifis. 
+Templating engine supports proxy. So you can access `http-proxy` in your config file by using `{{ .HTTPProxy }}`. You can use any proxy, but we suggest you to deploy your proxy to listen on bridge, so that the system becomes "portable", because your nodes won't suffer from configuration changes as the network environment changes due to DHCP or switching between wifis. 
 
 In order to set up proxy on bridge, there are two things to do. 
 
