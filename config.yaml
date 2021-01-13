@@ -2,12 +2,9 @@
 backend: "libvirt"
 
 bridge:
-  name: "mpqemubr0"
+  name: "mediumkube-br0"
   inet: 10.114.114.1/24
-  host: "enp0s31f6:"
-
-    
-
+  host: "enp0s31f6"
 
 http-proxy: "http://10.114.114.1:1091"
 https-proxy: "http://10.114.114.1:1091"
