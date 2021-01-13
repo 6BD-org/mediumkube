@@ -9,6 +9,8 @@ import (
 	"mediumkube/network"
 	"mediumkube/utils"
 	"os"
+	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/coreos/go-iptables/iptables"
@@ -16,11 +18,27 @@ import (
 	"k8s.io/klog/v2"
 )
 
+type DMux struct {
+	sync.Mutex
+}
+
 const (
 	ipv4  int    = netlink.FAMILY_V4
 	chain string = "MEDIUMKUBE_FW"
 	table string = "filter"
 )
+
+var (
+	ruleRegistry [][]string = make([][]string, 0)
+	on           bool       = true
+	dmux         DMux       = DMux{}
+)
+
+func stopDaemon() {
+	dmux.Lock()
+	on = false
+	dmux.Unlock()
+}
 
 func _forwardRuleIn(bridge common.Bridge) []string {
 	return []string{
@@ -34,6 +52,8 @@ func _forwardRuleOut(bridge common.Bridge) []string {
 	return []string{
 		"-d", bridge.Inet,
 		"-o", bridge.Name,
+		"-m", "conntrack",
+		"--ctstate", "RELATED,ESTABLISHED",
 		"-j", "ACCEPT",
 	}
 }
@@ -70,6 +90,24 @@ func _dhcpOut(bridge common.Bridge) []string {
 		"-p", "udp",
 		"-m", "udp",
 		"--sport", "67",
+		"-j", "ACCEPT",
+	}
+}
+
+func _forwardInboundToHost(bridge common.Bridge) []string {
+	return []string{
+		"-i", bridge.Name,
+		"-o", bridge.Host,
+		"-j", "ACCEPT",
+	}
+}
+
+func _forwardOutboundExtablished(bridge common.Bridge) []string {
+	return []string{
+		"-o", bridge.Name,
+		"-i", bridge.Host,
+		"-m", "conntrack",
+		"--ctstate", "ESTABLISHED,RELATED",
 		"-j", "ACCEPT",
 	}
 }
@@ -164,6 +202,9 @@ func processAddr(bridge common.Bridge) {
 }
 
 func insertRuleIfNotExists(chain string, rules ...string) {
+	if !utils.ContainsT(ruleRegistry, rules) {
+		ruleRegistry = append(ruleRegistry, append([]string{chain}, rules...))
+	}
 	iptable, err := iptables.New()
 	if err != nil {
 		klog.Error(err)
@@ -186,12 +227,39 @@ func insertRuleIfNotExists(chain string, rules ...string) {
 	}
 }
 
+func cleanUp() {
+	iptable, err := iptables.New()
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	for _, cr := range ruleRegistry {
+		chain := cr[0]
+		rules := cr[1:]
+		exists, err := iptable.Exists(
+			table,
+			chain,
+			rules...,
+		)
+		if err != nil {
+			klog.Error(err)
+			return
+		}
+		if exists {
+			klog.Info("Deleting: ", rules)
+			iptable.Delete(table, chain, rules...)
+		}
+	}
+}
+
 func processIptables(bridge common.Bridge) {
-	insertRuleIfNotExists("FORWARD", _forwardRuleOut(bridge)...)
-	insertRuleIfNotExists("FORWARD", _forwardRuleIn(bridge)...)
-	insertRuleIfNotExists("FORWARD", _forwardRejectICMPUnreachableIn(bridge)...)
+	//insertRuleIfNotExists("FORWARD", _forwardRuleOut(bridge)...)                 // Allow outbound traffic from bridge
+	//insertRuleIfNotExists("FORWARD", _forwardRuleIn(bridge)...)                  // Allow inbound traffic to bridge
+	insertRuleIfNotExists("FORWARD", _forwardInboundToHost(bridge)...)
+	insertRuleIfNotExists("FORWARD", _forwardOutboundExtablished(bridge)...)
+	insertRuleIfNotExists("FORWARD", _forwardRejectICMPUnreachableIn(bridge)...) // Reject traffic when ICMP unreachable
 	insertRuleIfNotExists("FORWARD", _forwardRejectICMPUnreachableOut(bridge)...)
-	insertRuleIfNotExists("INPUT", _dhcpIn(bridge)...)
+	insertRuleIfNotExists("INPUT", _dhcpIn(bridge)...) // Open port for DHCP
 	insertRuleIfNotExists("OUTPUT", _dhcpOut(bridge)...)
 }
 
@@ -202,11 +270,38 @@ func main() {
 	tmpFlagSet.Parse(os.Args)
 	configurations.InitConfig(*configDir)
 
-	for {
-		time.Sleep(5 * time.Second)
-		bridge := configurations.Config().Bridge
-		processExistence(bridge)
-		processAddr(bridge)
-		processIptables(bridge)
-	}
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Kill)
+
+	wg := sync.WaitGroup{}
+
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+
+		select {
+		case sig := <-c:
+			klog.Info("Sig recvd: ", sig)
+			stopDaemon()
+			cleanUp()
+		}
+	}()
+
+	func() {
+		wg.Add(1)
+		defer wg.Done()
+		for on {
+			dmux.Lock()
+			time.Sleep(5 * time.Second)
+			bridge := configurations.Config().Bridge
+			processExistence(bridge)
+			processAddr(bridge)
+			processIptables(bridge)
+			dmux.Unlock()
+		}
+	}()
+
+	wg.Wait()
+	klog.Info("Daemon exited")
 }
