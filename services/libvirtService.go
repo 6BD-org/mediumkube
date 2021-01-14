@@ -5,6 +5,7 @@ import (
 	"log"
 	"mediumkube/common"
 	"mediumkube/configurations"
+	"mediumkube/network"
 	"mediumkube/utils"
 	"os"
 	"os/exec"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/libvirt/libvirt-go"
+	"github.com/olekukonko/tablewriter"
 	"k8s.io/klog/v2"
 )
 
@@ -251,7 +253,10 @@ func (service LibvirtService) List() {
 	dms, err := service.conn.ListAllDomains(libvirt.CONNECT_LIST_DOMAINS_PERSISTENT)
 
 	utils.CheckErr(err)
-	fmt.Println("Name \t Status \t Reason")
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{
+		"Name", "IP", "STATE", "REASON",
+	})
 	for _, d := range dms {
 		name, _ := d.GetName()
 		domainState, r, err := (&d).GetState()
@@ -261,10 +266,20 @@ func (service LibvirtService) List() {
 		} else {
 			stateStr = stateMap[domainState]
 		}
-		fmt.Printf("%v \t %v \t %v \n", name, stateStr, r)
+		addr, ok := network.Resolve(service.leasePath(), name)
+		if !ok {
+			addr = "UNAVAILABLE"
+		}
+		table.Append([]string{
+			name, addr, stateStr, string(r),
+		})
 	}
+	table.Render()
 }
 
+func (service LibvirtService) leasePath() string {
+	return path.Join(service.config.TmpDir, "dnsmasq.lease")
+}
 func init() {
 	log.Println("Initing socket connection")
 	conn, err := libvirt.NewConnect("qemu:///system")
