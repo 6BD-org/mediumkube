@@ -283,6 +283,7 @@ func startDnsmasq(bridge common.Bridge, config common.OverallConfig) {
 		fmt.Sprintf("--listen-address=%v", strings.Split(bridge.Inet, "/")[0]),
 		"--dhcp-no-override",
 		"--dhcp-authoritative",
+		// NEVER change lease file.
 		fmt.Sprintf("--dhcp-leasefile=%v", path.Join(config.TmpDir, "dnsmasq.lease")),
 		fmt.Sprintf("--dhcp-hostsfile=%v", path.Join(config.TmpDir, "dnsmasq.hosts")),
 		fmt.Sprintf("--dhcp-range=%v", fmt.Sprintf("%v.2,%v.254,infinite", subnet, subnet)),
