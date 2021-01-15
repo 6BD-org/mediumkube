@@ -13,16 +13,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func parseConfig(configPath string) common.TemplateConfig {
+func parseConfig(configPath string) common.OverallConfig {
 	data := utils.ReadStr(configPath)
 
-	var config common.TemplateConfig = common.TemplateConfig{}
+	var config common.OverallConfig = common.OverallConfig{}
 	err := yaml.Unmarshal([]byte(data), &config)
 	utils.CheckErr(err)
-
-	config.PubKey = utils.ReadStr(config.PubKeyDir)
-	config.PrivKey = utils.ReadStr(config.PrivKeyDir)
-	config.HostPubKey = utils.ReadStr(config.HostPubKeyDir)
 
 	return config
 }
