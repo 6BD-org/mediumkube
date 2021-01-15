@@ -20,3 +20,8 @@ $ sudo systemctl start libvirtd
 # Then you can use packages
 $ virsh list
 ```
+
+```sh
+# Install libraries before we can actually compile mediumkube
+$ sudo dnf install libvirt-devel-6.6.0-5.fc33.x86_64
+```
