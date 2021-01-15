@@ -14,7 +14,6 @@ func main() {
 	configDir := tmpFlagSet.String("config", "./config.yaml", "Configuration file")
 	tmpFlagSet.Parse(os.Args)
 	configurations.InitConfig(*configDir)
-
 	// Handle command
 	commands.RootHandler{}.Handle(os.Args)
 
