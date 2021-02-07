@@ -5,6 +5,7 @@ import (
 	"log"
 	"mediumkube/common"
 	"mediumkube/configurations"
+	"mediumkube/mediumssh"
 	"mediumkube/network"
 	"mediumkube/utils"
 	"os"
@@ -36,6 +37,9 @@ const (
 	cloudInitMetaTemplate string = `
 instance-id: id-%v
 local-hostname: %v`
+
+	sshUser string = "ubuntu"
+	sshPort int    = 22
 )
 
 var (
@@ -51,6 +55,10 @@ func cleanUp() {
 
 func bridgeIP(bridge common.Bridge) string {
 	return strings.Split(bridge.Inet, "/")[0]
+}
+
+func formatSSHAddr(addr string) string {
+	return fmt.Sprintf("%v:%v", addr, sshPort)
 }
 
 // func networkXML(name string, bridge common.Bridge) string {
@@ -185,9 +193,15 @@ func (service LibvirtService) Purge(node string) {
 		"destroy",
 		node,
 	)
-
-	_, err := utils.ExecWithStdio(cmdDestory)
+	domain, err := service.conn.LookupDomainByName(node)
 	utils.CheckErr(err)
+
+	// Destroy the domain if it is running
+	if state, _, err := domain.GetState(); err != nil && state == libvirt.DOMAIN_RUNNING {
+		_, err = utils.ExecWithStdio(cmdDestory)
+		utils.CheckErr(err)
+	}
+
 	// Step2 undefine
 	cmdUndefine := exec.Command(
 		"virsh",
@@ -221,6 +235,14 @@ func (service LibvirtService) Stop(node string) {
 
 // Exec a command in a domain and return output
 func (service LibvirtService) Exec(node string, command []string, sudo bool) string {
+	addr, ok := network.Resolve(service.leasePath(), node)
+	if !ok {
+		klog.Error("Unable to resolve node: ", node)
+	}
+	addr = formatSSHAddr(addr)
+	sshClient := mediumssh.SSHLogin(sshUser, addr, service.config.HostPrivKeyDir)
+	sshClient.Execute(command, sudo)
+
 	return ""
 }
 
