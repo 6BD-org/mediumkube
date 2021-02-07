@@ -52,6 +52,8 @@ func (handler RootHandler) Handle(args []string) {
 		switch args[1] {
 		case "list":
 			CMD["list"].Handle(args[1:])
+		case "exec":
+			CMD["exec"].Handle(args[1:])
 		case "render":
 			CMD["render"].Handle(args[1:])
 		case "deploy":
@@ -70,6 +72,8 @@ func (handler RootHandler) Handle(args []string) {
 			CMD["start"].Handle(args[1:])
 		case "stop":
 			CMD["stop"].Handle(args[1:])
+		case "transfer":
+			CMD["transfer"].Handle(args[1:])
 		case "help":
 			handler.Help()
 		default:

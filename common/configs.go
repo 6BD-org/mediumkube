@@ -46,6 +46,8 @@ This config is in same file with Template config, but when parsed,
 the template part will be ignored.
 */
 type OverallConfig struct {
+	HTTPSProxy      string       `yaml:"https-proxy,omitempty"`
+	HTTPProxy       string       `yaml:"http-proxy,omitempty"`
 	Backend         string       `yaml:"backend"`
 	Bridge          Bridge       `yaml:"bridge"`
 	NodeConfig      []NodeConfig `yaml:"nodes"`

@@ -5,6 +5,7 @@ import (
 	"log"
 	"mediumkube/common"
 	"mediumkube/configurations"
+	"mediumkube/mediumssh"
 	"mediumkube/network"
 	"mediumkube/utils"
 	"os"
@@ -36,6 +37,9 @@ const (
 	cloudInitMetaTemplate string = `
 instance-id: id-%v
 local-hostname: %v`
+
+	sshUser string = "ubuntu"
+	sshPort int    = 22
 )
 
 var (
@@ -51,6 +55,20 @@ func cleanUp() {
 
 func bridgeIP(bridge common.Bridge) string {
 	return strings.Split(bridge.Inet, "/")[0]
+}
+
+func formatSSHAddr(addr string) string {
+	return fmt.Sprintf("%v:%v", addr, sshPort)
+}
+
+func (service LibvirtService) connectToNode(node string) mediumssh.SSHClient {
+	addr, ok := network.Resolve(service.leasePath(), node)
+	if !ok {
+		klog.Error("Unable to resolve node: ", node)
+	}
+	addr = formatSSHAddr(addr)
+	sshClient := mediumssh.SSHLogin(sshUser, addr, service.config.HostPrivKeyDir)
+	return sshClient
 }
 
 // func networkXML(name string, bridge common.Bridge) string {
@@ -185,9 +203,16 @@ func (service LibvirtService) Purge(node string) {
 		"destroy",
 		node,
 	)
-
-	_, err := utils.ExecWithStdio(cmdDestory)
+	domain, err := service.conn.LookupDomainByName(node)
 	utils.CheckErr(err)
+
+	// Destroy the domain if it is running
+	if state, _, err := domain.GetState(); err == nil && state == libvirt.DOMAIN_RUNNING {
+		klog.Info("Stopping node", node)
+		_, err = utils.ExecWithStdio(cmdDestory)
+		utils.CheckErr(err)
+	}
+
 	// Step2 undefine
 	cmdUndefine := exec.Command(
 		"virsh",
@@ -221,11 +246,26 @@ func (service LibvirtService) Stop(node string) {
 
 // Exec a command in a domain and return output
 func (service LibvirtService) Exec(node string, command []string, sudo bool) string {
+
+	sshClient := service.connectToNode(node)
+	sshClient.Execute(command, sudo)
+
 	return ""
 }
 
 // Transfer a file to a domain
-func (service LibvirtService) Transfer(src string, tgt string) {}
+func (service LibvirtService) Transfer(src string, hostAndTgt string) {
+	hostTgt := strings.Split(hostAndTgt, ":")
+	if len(hostTgt) < 2 {
+		klog.Error("Invalid format: ", hostTgt)
+		return
+	}
+
+	host, tgt := hostTgt[0], hostTgt[1]
+	sshClient := service.connectToNode(host)
+	sshClient.Transfer(src, tgt)
+
+}
 
 // AttachAndExec attach to std and execute
 func (service LibvirtService) AttachAndExec(node string, command []string, sudo bool) {}

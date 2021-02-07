@@ -9,7 +9,6 @@ ssh_keys:
 
   rsa_public: {{ .PubKey }}
 
-
 # Set up software sources
 apt:
   {{if .HTTPProxy}}http_proxy: {{ .HTTPProxy }}{{end}}
