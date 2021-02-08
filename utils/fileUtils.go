@@ -32,12 +32,18 @@ func WriteStr(path string, content string, perm os.FileMode) {
 // GetFileName get file name from its full path
 func GetFileName(fullPath string) string {
 	splitted := strings.Split(fullPath, "/")
+	if len(splitted) == 0 {
+		return ""
+	}
 	return splitted[len(splitted)-1]
 }
 
 // GetFileDir get dir of file given full path
 func GetFileDir(fullPath string) string {
 	lastSlash := strings.LastIndex(fullPath, "/")
+	if lastSlash < 0 {
+		return ""
+	}
 	return fullPath[:lastSlash]
 }
 
