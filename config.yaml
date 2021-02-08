@@ -1,18 +1,39 @@
-http-proxy: "http://172.16.184.20:1091"
-https-proxy: "http://172.16.184.20:1091"
+# Backend can be multipass or libvirt
+backend: "libvirt"
+
+bridge:
+  name: "mediumkube-br0"
+  inet: 10.114.114.1/24
+  host: "enp0s31f6"
+
+http-proxy: "http://10.114.114.1:1091"
+https-proxy: "http://10.114.114.1:1091"
+# It is suggested that you use multipass bridge network 
+# in case of ip change
 
 pub-key-dir: "/home/temp/.ssh/cloud.pub"
 priv-key-dir: "/home/temp/.ssh/cloud"
 host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
+host-priv-key-dir: "/home/temp/.ssh/id_rsa"
 
-image: "file:///home/temp/u_20.04.img"
+image: "/home/temp/bionic.img"
 cloud-init: "./cloud-init.yaml"
 
-node-num: 2
-node:
-  cpu: "2"
-  mem: "2G"
-  disk: "20G"
+nodes:
+  - name: node1
+    cpu: "2"
+    mem: "2G"
+    disk: "20G"
+
+  - name: node2
+    cpu: "2"
+    mem: "2G"
+    disk: "20G"
+
+  - name: node3
+    cpu: "2"
+    mem: "2G"
+    disk: "20G"
 
 # see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
 # see https://coreos.com/flannel/docs/latest/kubernetes.html for Flannel guides
@@ -20,5 +41,14 @@ kube-init:
   args:
     - key: "ignore-preflight-errors"
       value: "control-plane-prepare"
-    - key: "pod-network-cird"
+    - key: "pod-network-cidr"
       value: "10.244.0.0/16"
+
+# MediumKube configs
+
+tmp_dir: /home/temp/mediumkube
+
+# Kubeconfig inside the virtual machine
+# For kubernetes client
+vm_kube_config_dir: /home/ubuntu/.kube/config
+vm_log_dir: /var/log/bootstrap

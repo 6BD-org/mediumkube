@@ -3,11 +3,13 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"log"
 	"mediumkube/common"
+	"mediumkube/configurations"
+	"mediumkube/k8s"
 	"mediumkube/services"
 	"mediumkube/utils"
-
-	"gopkg.in/yaml.v3"
+	"os"
 )
 
 type InitHandler struct {
@@ -35,7 +37,6 @@ func initCmd(args []common.Arg) []string {
 
 func (handler InitHandler) Handle(args []string) {
 
-	configPath := handler.flagSet.String("config", "./config.yaml", "Config file that defines kubernetes init args")
 	node := handler.flagSet.String("node", "node1", "Node to be inited")
 	handler.flagSet.Parse(args[1:])
 
@@ -48,17 +49,24 @@ func (handler InitHandler) Handle(args []string) {
 		return
 	}
 
-	configStr := utils.ReadByte(*configPath)
-
-	overallConfig := common.OverallConfig{}
-
-	err := yaml.Unmarshal(configStr, &overallConfig)
-	utils.CheckErr(err)
+	overallConfig := configurations.Config()
 
 	kubeInitArgs := overallConfig.KubeInit.Args
 	cmd := initCmd(kubeInitArgs)
-	services.MultipassService{}.Exec(*node, cmd, true)
+	services.GetMultipassService().Exec(*node, cmd, true)
 	// TODO: Add post-command to enable kubectl
+
+	log.Printf("Doing post-init configurations")
+	services.GetMultipassService().ExecScript(*node, "./k8s/scripts/post-init.sh", false)
+
+	// Transfer kube-config
+	log.Printf("Mkdir %v\n", utils.GetFileDir(k8s.KubeConfigPath(overallConfig)))
+
+	// We need execute permission here for cascade mkdir
+	err := os.MkdirAll(utils.GetFileDir(k8s.KubeConfigPath(overallConfig)), os.FileMode(0777))
+	utils.CheckErr(err)
+	log.Println("Transferring kube config")
+	services.GetMultipassService().Transfer(fmt.Sprintf("%v:%v", *node, overallConfig.VMKubeConfigDir), k8s.KubeConfigPath(overallConfig))
 
 }
 

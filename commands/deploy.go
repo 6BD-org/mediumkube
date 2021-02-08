@@ -2,11 +2,10 @@ package commands
 
 import (
 	"flag"
+	"fmt"
 	"mediumkube/common"
+	"mediumkube/configurations"
 	"mediumkube/services"
-	"mediumkube/utils"
-
-	"gopkg.in/yaml.v3"
 )
 
 type DeployHandler struct {
@@ -18,34 +17,43 @@ func (handler DeployHandler) Desc() string {
 }
 
 func (handler DeployHandler) Help() {
-	handler.flagset.Usage()
+	fmt.Println("deploy node1 node2...")
+	fmt.Println("Absence of node indicates deploy all defined nodes")
 
 }
 
 func (handler DeployHandler) Handle(args []string) {
 
-	configPath := handler.flagset.String("config", "./config.yaml", "Config yaml for deployment")
 	handler.flagset.Parse(args[1:])
 
 	if Help(handler, args) {
 		return
 	}
+	overallConfig := configurations.Config()
+	var nodes []common.NodeConfig
+	nodeNames := args[1:]
 
-	configStr := utils.ReadByte(*configPath)
+	if len(nodeNames) == 0 {
+		nodes = overallConfig.NodeConfig
+	} else {
+		nodes = make([]common.NodeConfig, 0)
+		nodeMap := make(map[string]common.NodeConfig)
+		for _, n := range overallConfig.NodeConfig {
+			nodeMap[n.Name] = n
+		}
+		for _, name := range nodeNames {
+			node, ok := nodeMap[name]
+			if !ok {
+				panic(fmt.Sprintf("Node node defined: %v", name))
+			}
+			nodes = append(nodes, node)
+		}
+	}
 
-	overallConfig := common.OverallConfig{}
-
-	err := yaml.Unmarshal(configStr, &overallConfig)
-	utils.CheckErr(err)
-
-	nodeConfig := overallConfig.NodeConfig
-	services.MultipassService{}.Deploy(
-		overallConfig.NodeNum,
-		nodeConfig.CPU,
-		nodeConfig.MEM,
-		nodeConfig.DISK,
-		overallConfig.Image,
+	services.GetNodeManager(overallConfig.Backend).Deploy(
+		nodes,
 		overallConfig.CloudInit,
+		overallConfig.Image,
 	)
 }
 

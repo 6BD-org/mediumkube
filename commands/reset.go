@@ -3,6 +3,8 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"log"
+	"mediumkube/configurations"
 	"mediumkube/services"
 )
 
@@ -21,8 +23,6 @@ func (ResetHandler) Desc() string {
 
 func (handler ResetHandler) Handle(args []string) {
 
-	node := handler.flagSet.String("node", "", "Name of the node to be reset")
-
 	handler.flagSet.Parse(args[1:])
 	fmt.Println(handler.flagSet.Args())
 
@@ -30,9 +30,16 @@ func (handler ResetHandler) Handle(args []string) {
 		return
 	}
 
+	node := args[1]
+
 	cmd := []string{"kubeadm", "reset"}
 
-	services.MultipassService{}.Exec(*node, cmd, true)
+	services.GetMultipassService().AttachAndExec(node, cmd, true)
+
+	log.Println("Removing custom kube config")
+	config := configurations.Config()
+	rmConfigCmd := []string{"rm", config.VMKubeConfigDir}
+	services.GetMultipassService().AttachAndExec(node, rmConfigCmd, true)
 
 }
 

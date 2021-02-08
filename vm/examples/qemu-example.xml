@@ -1,0 +1,37 @@
+<domain type='qemu'>
+  <name>{{ .Name }}</name>
+  <uuid>{{ .UUID }}</uuid>
+  <memory>{{ .MemoryInBytes }}</memory>
+  <currentMemory>{{ .MemoryInBytes }}</currentMemory>
+  <vcpu>{{ .CPU }}</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc'>hvm</type>
+    <boot dev='hd' />
+    <boot dev='cdrom' />
+  </os>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <disk type='file' device='cdrom'>
+      <source file='{{ .CDROM }}' />
+      <target dev='hdc' />
+      <readonly />
+    </disk>
+    <disk type='file' device='disk'>
+      <source file='{{ .DiskImage }}' />
+      <target dev='hda' />
+    </disk>
+    <interface type='network'>
+      <source network='default' />
+    </interface>
+
+    <interface type='bridge'>
+      <!-- Host bridge -->
+      <source bridge='br0'/>
+    </interface>
+
+    <interface type='bridge'>
+      <source bridge='{{ .Network.AttachedBridge }}'/>
+      <target dev='{{.Network.Name}}'/>
+    </interface>
+  </devices>
+</domain>

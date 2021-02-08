@@ -2,7 +2,7 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
   pull_request:
     branches: [ master ]
 
@@ -28,8 +28,13 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
-
+        sudo apt install libvirt-dev qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+        sudo addgroup libvirtd
+        sudo usermod -a -G libvirtd $USER
     - name: Test
-      run: go test ./tests/...
+      run: go test ./...
     - name: Build
-      run: ./hack/build.sh
+      run: go build
+
+
+

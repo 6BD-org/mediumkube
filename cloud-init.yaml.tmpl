@@ -1,7 +1,4 @@
-
-# Setup identical ssh key for host machine
-
-
+#cloud-config
 ssh_authorized_keys:
   - {{ .PubKey }}
   - {{ .HostPubKey }}
@@ -12,11 +9,10 @@ ssh_keys:
 
   rsa_public: {{ .PubKey }}
 
-
 # Set up software sources
 apt:
-  http_proxy: {{ .HTTPProxy }}
-  https_proxy: {{ .HTTPSProxy }}
+  {{if .HTTPProxy}}http_proxy: {{ .HTTPProxy }}{{end}}
+  {{if .HTTPSProxy}}https_proxy: {{ .HTTPSProxy }}{{end}}
   primary:
     - arches: [default]
       uri: http://mirrors.tuna.tsinghua.edu.cn/ubuntu/
@@ -52,8 +48,6 @@ write_files:
       
       # If you need proxy to install kubernetes
       # Set following variables
-      export http_proxy={{ .HTTPProxy }}
-      export https_proxy={{ .HTTPSProxy }}
       
       curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
@@ -67,16 +61,19 @@ write_files:
 
   - content: |
       [Service]
-      Environment="HTTP_PROXY={{ .HTTPProxy }}"
-      Environment="HTTPS_PROXY={{ .HTTPSProxy }}"
+      {{if .HTTPProxy}}Environment="HTTP_PROXY={{ .HTTPProxy }}"{{end}}
+      {{if .HTTPSProxy}}Environment="HTTPS_PROXY={{ .HTTPSProxy }}"{{end}}
     path: /etc/systemd/system/docker.service.d/http-proxy.conf
     permissions: '0666'
 
 
+
 runcmd:
+  {{if .HTTPProxy}}- export http_proxy={{ .HTTPProxy }}{{end}}
+  {{if .HTTPSProxy}}- export https_proxy={{ .HTTPSProxy }}{{end}}
   - mkdir -p /var/log/bootstrap
   - sudo mkdir -p /etc/systemd/system/docker.service.d
-  - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh
+  - curl -fsSL https://get.docker.com -o get-docker.sh; sh get-docker.sh >> /var/log/bootstrap/init_kubeadm.log
   - sh /run/bootstrap/init_network.sh >> /var/log/bootstrap/init_network.log
   - sh /run/bootstrap/init_kube.sh >> /var/log/bootstrap/init_kubeadm.log
   - sudo systemctl daemon-reload

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"mediumkube/configurations"
 	"mediumkube/utils"
 	"os/exec"
 )
@@ -35,17 +36,24 @@ func (handler RootHandler) Handle(args []string) {
 		fmt.Printf("%v\n", "Insufficient arguments\n")
 		handler.Help()
 	} else {
+		config := configurations.Config()
 
-		// Multipass commands are compatible
-		for _, v := range multipassDelegated {
-			if args[1] == v {
-				cmd := exec.Command("multipass", args[1:]...)
-				utils.AttachAndExec(cmd)
-				return
+		if config.Backend == "multipass" {
+			// Multipass commands are compatible
+			for _, v := range multipassDelegated {
+				if args[1] == v {
+					cmd := exec.Command("multipass", args[1:]...)
+					utils.AttachAndExec(cmd)
+					return
+				}
 			}
 		}
 
 		switch args[1] {
+		case "list":
+			CMD["list"].Handle(args[1:])
+		case "exec":
+			CMD["exec"].Handle(args[1:])
 		case "render":
 			CMD["render"].Handle(args[1:])
 		case "deploy":
@@ -54,6 +62,18 @@ func (handler RootHandler) Handle(args []string) {
 			CMD["init"].Handle(args[1:])
 		case "reset":
 			CMD["reset"].Handle(args[1:])
+		case "join":
+			CMD["join"].Handle(args[1:])
+		case "apply":
+			CMD["apply"].Handle(args[1:])
+		case "purge":
+			CMD["purge"].Handle(args[1:])
+		case "start":
+			CMD["start"].Handle(args[1:])
+		case "stop":
+			CMD["stop"].Handle(args[1:])
+		case "transfer":
+			CMD["transfer"].Handle(args[1:])
 		case "help":
 			handler.Help()
 		default:

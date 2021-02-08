@@ -1,4 +1,106 @@
-# Setup a k8s cluster using multipass
+# Set up a k8s cluster using libvirt
+
+It is planned that `mediunkube` no-longer depends on multipass by force, instead, multipass becomes an optional backend. Multipass is an active project, which is good, but it becomes difficult to catch up with. Therefore we move to `libvirt`, which is slower in release speed, and relatively stable and flexible.
+
+## Prerequests
+
+- `qemu` The hardware emulator at lowest level, which does binary translation and emulates peripheral devices
+- `qemu-img` A tool used to manipulate disk images. MediumKube uses it to expand the image to desired size as user defined in yaml file
+- `libvirt` libvirt is a high-level library that provides APIs for convenient manipulations of domains, networks, etc... MediumKube uses these api via rpc and some commandline tools like `virsh`, `virt-install`
+- `kvm (optional)` A linux module that allows CPU to switch to guest state where privilege instructions fall back to hypervisor code. Using `kvm` along with `qemu` provides near-native performance because it avoids some unnecessary binary translations
+
+If you have trouble installing these software, just go ahead with `multipass` backend.
+
+## How does it work
+
+Please refer to [this](./daemon/README.md)
+
+## Configuration references
+Please refer to [this](./docs/config.md) for configurations and [this](./docs/config-libvirt.md) for libvirt-specific configurations
+
+## Get started
+Node that mediumkube isn't a well packaged software right now, so is's not available in any kind of package manager. You will need to build the project and run binaries manually.
+
+To compile the project
+
+```bash
+$ make clean
+$ make all
+```
+This command will produce two executables, which are `mediumkube` and `mediumkubed`. First of all, you need to start `mediumkubed` and make sure it keeps running. Once you stop it, it will clean up configurations so you will lose ip table entries.
+
+```bash
+
+$ ./mediumkubed
+
+```
+
+Then you can deploy the machine
+
+```bash
+$ ./mediumkube deploy node1
+```
+
+This will deploy `node1` defined in your config file. The deployment process will attach you to the stdio of virtual machine, if you wanna escape, use `ctrl + ]`.
+
+To purge the machine that is installed, use 
+```bash
+
+$ ./mediumkube purge node1
+
+```
+
+Please note that you cannot purge a machine that is created by another backend! So if you want to purge a multipass machine, either use `multipass` command or change backend in config file.
+
+## Use proxy
+
+Templating engine supports proxy. So you can access `http-proxy` in your config file by using `{{ .HTTPProxy }}`. You can use any proxy, but we suggest you to deploy your proxy to listen on bridge, so that the system becomes "portable", because your nodes won't suffer from configuration changes as the network environment changes due to DHCP or switching between wifis. 
+
+In order to set up proxy on bridge, there are two things to do. 
+
+1. You should open port on bridge for your proxy. You can use [this script](./hack/openport.sh)
+2. Just point the proxy server to the ip address of mediumkube bridge and you are good to go
+
+
+## Remotely execute commands
+
+You can execute commands on node remotely using `mediumkube`
+
+```bash
+# For example, this command lists all files under root dir
+# on node1
+$ mediumkube exec node1 ls /
+```
+
+## Transfer files from host to node
+
+You can transfer files from your host machine to nodes you deployed. (Still working on another direction)
+
+```bash
+# This command sends text.txt to node1 and place it under /home/ubuntu
+$ mediumkube transfer ./test.txt node1:/home/ubuntu/remote.txt
+```
+
+## Node life cycle management
+
+In order to stop a node
+```bash
+$ mediumkube stop node1
+```
+
+To start a node
+```bash
+$ mediumkube start node1
+```
+
+To purge a node (which means stop it, then delete it along with storages attached to it)
+
+```bash
+
+$ mediumkube purge node1
+```
+
+# [DEPRECATED] Setup a k8s cluster using multipass
 
 This is a very simple toolkit that helps setup a K8s cluster easily (In order to learn some network knowledges about K8s)
 
@@ -16,6 +118,14 @@ This is a very simple toolkit that helps setup a K8s cluster easily (In order to
 ```bash
 
 $ sudo apt install multipass
+
+```
+
+In order to use multipass behind a proxy, use following command
+
+```bash
+
+$ sudo snap set multipass proxy.http="http://{host}:{port}"
 
 ```
 
@@ -216,10 +326,22 @@ journalctl --unit snap.multipass*
 If you are executing commands in the virtual machine during init, make sure to save logs to file
 for analysis. In cloud-init
 
-```bash
+```yaml
 runcmd:
     - sh dosomething.sh >> /var/log/bootstrap/dosomething.log
 ```
+
+We support logging side car. This will mount the log directort inside the vm to host machine, and start go routines to
+watch those file changes.
+
+Mounting in init stage is not officially supported, so we implemented it with ugly loop inside a go routine. This should be fixed as soon as multipass supports mounting. (Also think about watching ssh files)
+
+In order to specify the log directory in vm, add this config
+
+```yaml
+vm_log_dir: /var/log/bootstrap
+```
+The logs will be mounted to tmp directory of `mediumkube`
 
 ## About CLI
 For ease of development, this cli only contains 2 layers of command hierarchy and key word arguments, like following
@@ -245,6 +367,28 @@ $ main-command sub-command-1 sub-command-2 --key val
 ```
 
 But I personally don't encourage either adding more layers or mixing up positional and keyword arguments.
+
+
+## Install resource to kubernetes using MediumKube
+
+Following types are currently supported You are free to add more if you need them
+
+```golang
+	resourceType["PodSecurityPolicy"] = &v1beta1.PodSecurityPolicy{}
+	resourceType["ClusterRole"] = &v1.ClusterRole{}
+	resourceType["ClusterRoleBinding"] = &v1.ClusterRoleBinding{}
+	resourceType["ServiceAccount"] = &coreV1.ServiceAccount{}
+	resourceType["ConfigMap"] = &coreV1.ConfigMap{}
+	resourceType["DaemonSet"] = &appsV1.DaemonSet{}
+	resourceType["StatefulSet"] = &appsV1.StatefulSet{}
+```
+
+You can edit your yaml outside the cluster using your favorite text editor, and submit them using the command 
+
+```bash
+$ ./mediumkube apply my.yaml
+```
+
 
 ## Roadmap
 - Cli tool for cluster management

@@ -2,6 +2,7 @@
 
 build/
 
-main
-
 cloud-init.yaml
+
+mediumkube
+mediumkubed
