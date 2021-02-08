@@ -2,10 +2,13 @@ package mediumssh
 
 import (
 	"bufio"
+	"io"
 	"mediumkube/utils"
 	"os"
+	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/klog/v2"
@@ -54,38 +57,66 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 	sess, err := sc.client.NewSession()
 	utils.CheckErr(err)
 
+	if len(targetPath) == 0 {
+		klog.Error("Illegal target path")
+		return
+	}
+
+	if targetPath[len(targetPath)-1] == '/' {
+		targetPath = path.Join(targetPath, utils.GetFileName(srcPath))
+	}
+
 	tgtDir := utils.GetFileDir(targetPath)
-	err = sess.Run(strings.Join(_mkdirCmd(tgtDir), " "))
-	utils.CheckErr(err)
+	if len(tgtDir) > 0 {
+		err = sess.Run(strings.Join(_mkdirCmd(tgtDir), " "))
+		utils.CheckErr(err)
+		sess, err = sc.client.NewSession()
+		utils.CheckErr(err)
+	}
 
 	wg := sync.WaitGroup{}
 
 	file, err := os.Open(srcPath)
-	reader := bufio.NewReader(file)
-	scanner := bufio.NewScanner(reader)
+	utils.CheckErr(err)
+	scanner := bufio.NewScanner(file)
 
 	pipe, err := sess.StdinPipe()
 	utils.CheckErr(err)
 
-	buf := make([]byte, 1024)
-	scanner.Buffer(buf, 1024)
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		sess.Run(strings.Join([]string{"tee", targetPath}, " "))
-	}()
+	wg.Add(2)
 
 	go func() {
-		wg.Add(1)
+		klog.Info("Starting remote receiver")
 		defer wg.Done()
-		for scanner.Scan() {
-			pipe.Write(scanner.Bytes())
+		err = sess.Run(strings.Join([]string{"tee", targetPath}, " "))
+		if err != nil {
+			klog.Error(err)
+			return
 		}
-		err = pipe.Close()
-		klog.Error(err)
-
+		klog.Info("Exiting remote receiver")
 	}()
 
+	time.Sleep(1 * time.Second)
+	go func() {
+		klog.Info("Starting file reader")
+		defer wg.Done()
+		klog.Info("Sending file")
+		for scanner.Scan() {
+			_, err := pipe.Write(scanner.Bytes())
+			if err != nil && err != io.EOF {
+				klog.Error(err)
+			}
+		}
+		scanerr := scanner.Err()
+		utils.CheckErr(scanerr)
+		if err != nil {
+			klog.Error(err)
+			return
+		}
+		klog.Info("Exiting file reader")
+		sess.Close()
+
+	}()
 	wg.Wait()
 
 }
