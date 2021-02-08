@@ -29,9 +29,9 @@ jobs:
             dep ensure
         fi
         sudo apt install libvirt-dev qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
-
+        sudo usermod -a -G libvirtd ubuntu
     - name: Test
-      run: sudo go test ./tests/...
+      run: go test ./tests/...
     - name: Build
       run: go build
 
