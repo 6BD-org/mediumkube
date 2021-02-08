@@ -48,6 +48,9 @@ github.com/mattn/go-runewidth
 # github.com/mitchellh/copystructure v1.0.0
 ## explicit
 github.com/mitchellh/copystructure
+# github.com/mitchellh/go-ps v1.0.0
+## explicit
+github.com/mitchellh/go-ps
 # github.com/mitchellh/reflectwalk v1.0.0
 github.com/mitchellh/reflectwalk
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
