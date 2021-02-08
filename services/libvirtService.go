@@ -311,7 +311,7 @@ func (service LibvirtService) List() {
 			addr = "UNAVAILABLE"
 		}
 		table.Append([]string{
-			name, addr, stateStr, string(r),
+			name, addr, stateStr, fmt.Sprint(r),
 		})
 	}
 	table.Render()
