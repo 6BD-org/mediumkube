@@ -32,7 +32,7 @@ jobs:
         sudo addgroup libvirtd
         sudo usermod -a -G libvirtd $USER
     - name: Test
-      run: go test ./tests/...
+      run: go test ./...
     - name: Build
       run: go build
 
