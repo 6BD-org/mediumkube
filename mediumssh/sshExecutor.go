@@ -14,6 +14,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// SSHClient Mediunkube managed ssh client
 type SSHClient struct {
 	client *ssh.Client
 }
@@ -86,19 +87,16 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 	wg.Add(2)
 
 	go func() {
-		klog.Info("Starting remote receiver")
 		defer wg.Done()
 		err = sess.Run(strings.Join([]string{"tee", targetPath}, " "))
 		if err != nil {
 			klog.Error(err)
 			return
 		}
-		klog.Info("Exiting remote receiver")
 	}()
 
 	time.Sleep(1 * time.Second)
 	go func() {
-		klog.Info("Starting file reader")
 		defer wg.Done()
 		klog.Info("Sending file")
 		for scanner.Scan() {
@@ -113,7 +111,6 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 			klog.Error(err)
 			return
 		}
-		klog.Info("Exiting file reader")
 		sess.Close()
 
 	}()

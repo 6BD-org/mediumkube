@@ -61,7 +61,46 @@ In order to set up proxy on bridge, there are two things to do.
 1. You should open port on bridge for your proxy. You can use [this script](./hack/openport.sh)
 2. Just point the proxy server to the ip address of mediumkube bridge and you are good to go
 
-# Setup a k8s cluster using multipass
+
+## Remotely execute commands
+
+You can execute commands on node remotely using `mediumkube`
+
+```bash
+# For example, this command lists all files under root dir
+# on node1
+$ mediumkube exec node1 ls /
+```
+
+## Transfer files from host to node
+
+You can transfer files from your host machine to nodes you deployed. (Still working on another direction)
+
+```bash
+# This command sends text.txt to node1 and place it under /home/ubuntu
+$ mediumkube transfer ./test.txt node1:/home/ubuntu/remote.txt
+```
+
+## Node life cycle management
+
+In order to stop a node
+```bash
+$ mediumkube stop node1
+```
+
+To start a node
+```bash
+$ mediumkube start node1
+```
+
+To purge a node (which means stop it, then delete it along with storages attached to it)
+
+```bash
+
+$ mediumkube purge node1
+```
+
+# [DEPRECATED] Setup a k8s cluster using multipass
 
 This is a very simple toolkit that helps setup a K8s cluster easily (In order to learn some network knowledges about K8s)
 

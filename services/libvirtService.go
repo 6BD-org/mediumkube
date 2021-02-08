@@ -166,6 +166,7 @@ type LibvirtService struct {
 }
 
 // Deploy deploy a domain
+// In libvirt backend, remote images are nolonger supported.
 func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string, image string) {
 	defer service.conn.Close()
 	defer cleanUp()
@@ -196,6 +197,8 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string
 }
 
 // Purge purge a domain
+// If the domain is running, this command will stop it
+// then delete the domain along with storages attached to it
 func (service LibvirtService) Purge(node string) {
 	// Step1 destory
 	cmdDestory := exec.Command(
@@ -254,6 +257,8 @@ func (service LibvirtService) Exec(node string, command []string, sudo bool) str
 }
 
 // Transfer a file to a domain
+// If ssh user is a non-root user, mediumkube can only transfer files
+// to directories that it has access to
 func (service LibvirtService) Transfer(src string, hostAndTgt string) {
 	hostTgt := strings.Split(hostAndTgt, ":")
 	if len(hostTgt) < 2 {
@@ -317,9 +322,12 @@ func (service LibvirtService) List() {
 	table.Render()
 }
 
+// leasePath is hardcoded as dnsmasq.lease in mediumkube's temp path
+// Do not rename or remove that file
 func (service LibvirtService) leasePath() string {
 	return path.Join(service.config.TmpDir, "dnsmasq.lease")
 }
+
 func init() {
 	log.Println("Initing socket connection")
 	conn, err := libvirt.NewConnect("qemu:///system")
