@@ -29,7 +29,6 @@ jobs:
             dep ensure
         fi
         sudo apt install libvirt-dev
-        sudo systemctl start libvirtd
 
     - name: Test
       run: go test ./tests/...
