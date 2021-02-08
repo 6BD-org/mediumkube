@@ -311,7 +311,7 @@ func (service LibvirtService) List() {
 			addr = "UNAVAILABLE"
 		}
 		table.Append([]string{
-			name, addr, stateStr, string(r),
+			name, addr, stateStr, fmt.Sprint(r),
 		})
 	}
 	table.Render()
@@ -323,7 +323,9 @@ func (service LibvirtService) leasePath() string {
 func init() {
 	log.Println("Initing socket connection")
 	conn, err := libvirt.NewConnect("qemu:///system")
-	utils.CheckErr(err)
+	if err != nil {
+		klog.Error("Fail to connect to libvirt: ", err)
+	}
 	InitLibvritService(
 		LibvirtService{
 			config: configurations.Config(),
