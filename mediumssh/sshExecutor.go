@@ -2,6 +2,7 @@ package mediumssh
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"mediumkube/utils"
 	"os"
@@ -14,13 +15,32 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// SSHMeta stores extra metadata used my mediumssh
+type sshMeta struct {
+	username string
+}
+
 // SSHClient Mediunkube managed ssh client
+// I suggest that the only way to obtain SSHClient is using SSHLogin function
 type SSHClient struct {
 	client *ssh.Client
+	meta   *sshMeta
 }
 
 func _mkdirCmd(dir string) []string {
 	return []string{"mkdir", "-p", dir}
+}
+
+func _chownCmd(dir string, user string, group string) []string {
+	return []string{"chown", fmt.Sprintf("%v:%v", user, group), "-R", dir}
+
+}
+func _sudo(cmd []string, sudo bool) []string {
+	if sudo {
+		return append([]string{"sudo"}, cmd...)
+	}
+	return cmd
+
 }
 
 // SSHLogin get client or die
@@ -38,17 +58,31 @@ func SSHLogin(username string, host string, keyPath string) SSHClient {
 	}
 	client, err := ssh.Dial("tcp", host, config)
 	utils.CheckErr(err)
-	return SSHClient{client: client}
+	meta := sshMeta{username: username}
+	return SSHClient{client: client, meta: &meta}
 }
 
-// Execute Execute a command
-func (sc SSHClient) Execute(cmd []string, sudo bool) {
+// AttachAndExecute Attach to the session and Execute a command
+// Under this mode, input of stdio can be captured by remote host
+func (sc SSHClient) AttachAndExecute(cmd []string, sudo bool) {
+	cmd = _sudo(cmd, sudo)
 	sess, err := sc.client.NewSession()
 	utils.CheckErr(err)
 	sess.Stderr = os.Stderr
 	sess.Stdin = os.Stdin
 	sess.Stdout = os.Stdout
 
+	err = sess.Run(strings.Join(cmd, " "))
+	utils.CheckErr(err)
+}
+
+// Execute a command remotely. The output and err will be printed on current Stdio
+func (sc SSHClient) Execute(cmd []string, sudo bool) {
+	cmd = _sudo(cmd, sudo)
+	sess, err := sc.client.NewSession()
+	utils.CheckErr(err)
+	sess.Stdout = os.Stdout
+	sess.Stderr = os.Stderr
 	err = sess.Run(strings.Join(cmd, " "))
 	utils.CheckErr(err)
 }
@@ -69,10 +103,13 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 
 	tgtDir := utils.GetFileDir(targetPath)
 	if len(tgtDir) > 0 {
-		err = sess.Run(strings.Join(_mkdirCmd(tgtDir), " "))
-		utils.CheckErr(err)
-		sess, err = sc.client.NewSession()
-		utils.CheckErr(err)
+		// Make dir as root
+		sc.Execute(_mkdirCmd(tgtDir), true)
+		// Recover the ownership of dir
+		user := sc.meta.username
+		group := user
+		sc.Execute(_chownCmd(tgtDir, user, group), true)
+
 	}
 
 	wg := sync.WaitGroup{}
@@ -87,16 +124,23 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 	wg.Add(2)
 
 	go func() {
+		// Start a process in remote host that redirect stdin to a file
 		defer wg.Done()
 		err = sess.Run(strings.Join([]string{"tee", targetPath}, " "))
 		if err != nil {
-			klog.Error(err)
-			return
+			if !strings.Contains(err.Error(), "signal PIPE") {
+				klog.Error(err)
+				return
+			}
 		}
 	}()
 
+	// Wait for remote process to start
 	time.Sleep(1 * time.Second)
+
 	go func() {
+		// Start a local process that read data from source file
+		// and write to the pipeline
 		defer wg.Done()
 		klog.Info("Sending file")
 		for scanner.Scan() {
