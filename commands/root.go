@@ -72,6 +72,8 @@ func (handler RootHandler) Handle(args []string) {
 			CMD["start"].Handle(args[1:])
 		case "stop":
 			CMD["stop"].Handle(args[1:])
+		case "shell":
+			CMD["shell"].Handle(args[1:])
 		case "transfer":
 			CMD["transfer"].Handle(args[1:])
 		case "help":

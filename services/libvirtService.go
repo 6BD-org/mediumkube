@@ -61,14 +61,15 @@ func formatSSHAddr(addr string) string {
 	return fmt.Sprintf("%v:%v", addr, sshPort)
 }
 
-func (service LibvirtService) connectToNode(node string) mediumssh.SSHClient {
+func (service LibvirtService) connectToNode(node string) (*mediumssh.SSHClient, error) {
 	addr, ok := network.Resolve(service.leasePath(), node)
 	if !ok {
 		klog.Error("Unable to resolve node: ", node)
+		return nil, fmt.Errorf("Unable to resolve node: %v", node)
 	}
 	addr = formatSSHAddr(addr)
 	sshClient := mediumssh.SSHLogin(sshUser, addr, service.config.HostPrivKeyDir)
-	return sshClient
+	return sshClient, nil
 }
 
 // func networkXML(name string, bridge common.Bridge) string {
@@ -250,7 +251,8 @@ func (service LibvirtService) Stop(node string) {
 // Exec a command in a domain and return output
 func (service LibvirtService) Exec(node string, command []string, sudo bool) string {
 
-	sshClient := service.connectToNode(node)
+	sshClient, err := service.connectToNode(node)
+	utils.CheckErr(err)
 	sshClient.Execute(command, sudo)
 
 	return ""
@@ -267,13 +269,18 @@ func (service LibvirtService) Transfer(src string, hostAndTgt string) {
 	}
 
 	host, tgt := hostTgt[0], hostTgt[1]
-	sshClient := service.connectToNode(host)
+	sshClient, err := service.connectToNode(host)
+	utils.CheckErr(err)
 	sshClient.Transfer(src, tgt)
 
 }
 
 // AttachAndExec attach to std and execute
-func (service LibvirtService) AttachAndExec(node string, command []string, sudo bool) {}
+func (service LibvirtService) AttachAndExec(node string, command []string, sudo bool) {
+	sshClient, err := service.connectToNode(node)
+	utils.CheckErr(err)
+	sshClient.AttachAndExecute(command, sudo)
+}
 
 // ExecScript a script
 func (service LibvirtService) ExecScript(node string, script string, sudo bool) {
@@ -290,6 +297,13 @@ func (service LibvirtService) ExecScript(node string, script string, sudo bool) 
 
 	log.Println("Shell execution finished! Cleaning up cache")
 	service.Exec(node, rmCmd, false)
+}
+
+// Shell launch a ssh session to a domain
+func (service LibvirtService) Shell(node string) {
+	sshClient, err := service.connectToNode(node)
+	utils.CheckErr(err)
+	sshClient.Shell()
 }
 
 // List domains
