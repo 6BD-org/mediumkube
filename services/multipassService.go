@@ -105,13 +105,20 @@ func (service MultipassService) ExecScript(node string, script string, sudo bool
 
 }
 
+// Purge delegated to multipass
 func (service MultipassService) Purge(node string) {}
 
+// Start delegated to
 func (service MultipassService) Start(node string) {}
 
+// Stop delegated to multipass
 func (service MultipassService) Stop(node string) {}
 
+// List delegated to multipass
 func (service MultipassService) List() {}
+
+// Shell delegated to multipass
+func (service MultipassService) Shell(node string) {}
 
 func init() {
 	InitMultipassService(MultipassService{

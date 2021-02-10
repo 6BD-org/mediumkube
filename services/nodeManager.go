@@ -11,6 +11,7 @@ type NodeManager interface {
 	Exec(node string, command []string, sudo bool) string
 	Transfer(src string, tgt string)
 	AttachAndExec(node string, command []string, sudo bool)
+	Shell(node string)
 	ExecScript(node string, script string, sudo bool)
 	List()
 }
