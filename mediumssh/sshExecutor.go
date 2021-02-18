@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/klog/v2"
@@ -112,6 +111,7 @@ func _chownCmd(dir string, user string, group string) []string {
 	return []string{"chown", fmt.Sprintf("%v:%v", user, group), "-R", dir}
 
 }
+
 func _sudo(cmd []string, sudo bool) []string {
 	if sudo {
 		return append([]string{"sudo"}, cmd...)
@@ -167,9 +167,9 @@ func (sc SSHClient) Execute(cmd []string, sudo bool) {
 }
 
 // Transfer a file from local file system to a ssh server
+// This is done by reading file and send to vm's input pipe,
+// and redirect stdin to file using tee
 func (sc SSHClient) Transfer(srcPath string, targetPath string) {
-	sess, err := sc.client.NewSession()
-	utils.CheckErr(err)
 
 	if len(targetPath) == 0 {
 		klog.Error("Illegal target path")
@@ -195,10 +195,12 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 
 	file, err := os.Open(srcPath)
 	utils.CheckErr(err)
-	scanner := bufio.NewScanner(file)
 
+	sess, err := sc.client.NewSession()
+	utils.CheckErr(err)
 	pipe, err := sess.StdinPipe()
 	utils.CheckErr(err)
+	writer := bufio.NewWriter(pipe)
 
 	wg.Add(2)
 
@@ -214,30 +216,95 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 		}
 	}()
 
-	// Wait for remote process to start
-	time.Sleep(1 * time.Second)
-
 	go func() {
 		// Start a local process that read data from source file
 		// and write to the pipeline
 		defer wg.Done()
-		klog.Info("Sending file")
-		for scanner.Scan() {
-			_, err := pipe.Write(scanner.Bytes())
-			if err != nil && err != io.EOF {
-				klog.Error(err)
+		buffer := make([]byte, 1024*4)
+		for {
+			n, err := file.Read(buffer)
+			if n > 0 {
+				_, errW := writer.Write(buffer[:n])
+				utils.CheckErr(errW)
 			}
+			if err != nil {
+				if err == io.EOF {
+					break
+				} else {
+					utils.CheckErr(err)
+				}
+			}
+			utils.CheckErr(err)
 		}
-		utils.CheckErr(scanner.Err())
 		if err != nil {
 			klog.Error(err)
 			return
 		}
-		sess.Close()
-
+		writer.Flush()
+		pipe.Close()
 	}()
 	wg.Wait()
 
+}
+
+// Receive a file from src in vm and save as tgt on host machine
+func (sc SSHClient) Receive(src string, tgt string) {
+	tgtDir := utils.GetFileDir(tgt)
+	if len(tgtDir) > 0 {
+		mkdirCmd := _mkdirCmd(tgtDir)
+		utils.ExecWithStdio(exec.Command(mkdirCmd[0], mkdirCmd[1:]...))
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(2) // receiver
+
+	sess, err := sc.client.NewSession()
+	utils.CheckErr(err)
+
+	pipe, err := sess.StdoutPipe()
+
+	go func() {
+		defer wg.Done()
+		file, err := os.OpenFile(tgt, os.O_CREATE|os.O_RDWR, os.FileMode(0755))
+		defer file.Close()
+		writer := bufio.NewWriter(file)
+
+		if err != nil {
+			klog.Error(err)
+			return
+		}
+
+		buffer := make([]byte, 1024*4)
+		for {
+
+			n, err := pipe.Read(buffer)
+			if n > 0 {
+				_, err := writer.Write(buffer[:n])
+				utils.CheckErr(err)
+				err = writer.Flush()
+				utils.CheckErr(err)
+			}
+			if err != nil {
+				if err == io.EOF {
+					break
+				} else {
+					utils.CheckErr(err)
+				}
+			}
+
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		err := sess.Run(strings.Join([]string{"cat", src}, " "))
+		if err != nil {
+			klog.Error(err)
+			return
+		}
+	}()
+
+	wg.Wait()
 }
 
 // Shell launch a shell

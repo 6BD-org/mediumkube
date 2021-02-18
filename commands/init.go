@@ -53,11 +53,11 @@ func (handler InitHandler) Handle(args []string) {
 
 	kubeInitArgs := overallConfig.KubeInit.Args
 	cmd := initCmd(kubeInitArgs)
-	services.GetMultipassService().Exec(*node, cmd, true)
+	services.GetNodeManager(overallConfig.Backend).Exec(*node, cmd, true)
 	// TODO: Add post-command to enable kubectl
 
 	log.Printf("Doing post-init configurations")
-	services.GetMultipassService().ExecScript(*node, "./k8s/scripts/post-init.sh", false)
+	services.GetNodeManager(overallConfig.Backend).ExecScript(*node, "./k8s/scripts/post-init.sh", false)
 
 	// Transfer kube-config
 	log.Printf("Mkdir %v\n", utils.GetFileDir(k8s.KubeConfigPath(overallConfig)))
@@ -66,7 +66,7 @@ func (handler InitHandler) Handle(args []string) {
 	err := os.MkdirAll(utils.GetFileDir(k8s.KubeConfigPath(overallConfig)), os.FileMode(0777))
 	utils.CheckErr(err)
 	log.Println("Transferring kube config")
-	services.GetMultipassService().Transfer(fmt.Sprintf("%v:%v", *node, overallConfig.VMKubeConfigDir), k8s.KubeConfigPath(overallConfig))
+	services.GetNodeManager(overallConfig.Backend).Transfer(fmt.Sprintf("%v:%v", *node, overallConfig.VMKubeConfigDir), k8s.KubeConfigPath(overallConfig))
 
 }
 
