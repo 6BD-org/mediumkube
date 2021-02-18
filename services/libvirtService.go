@@ -258,20 +258,40 @@ func (service LibvirtService) Exec(node string, command []string, sudo bool) str
 	return ""
 }
 
-// Transfer a file to a domain
-// If ssh user is a non-root user, mediumkube can only transfer files
-// to directories that it has access to
-func (service LibvirtService) Transfer(src string, hostAndTgt string) {
-	hostTgt := strings.Split(hostAndTgt, ":")
-	if len(hostTgt) < 2 {
-		klog.Error("Invalid format: ", hostTgt)
+// Transfer a file between vm and local machine
+func (service LibvirtService) Transfer(hostAndSrc string, hostAndTgt string) {
+	if strings.Contains(hostAndTgt, ":") {
+		hostTgt := strings.Split(hostAndTgt, ":")
+		if len(hostTgt) < 2 {
+			klog.Error("Invalid argument")
+			return
+		}
+		host, tgt := hostTgt[0], hostTgt[1]
+
+		src := hostAndSrc
+		sshClient, err := service.connectToNode(host)
+		utils.CheckErr(err)
+
+		sshClient.Transfer(src, tgt)
 		return
 	}
 
-	host, tgt := hostTgt[0], hostTgt[1]
-	sshClient, err := service.connectToNode(host)
-	utils.CheckErr(err)
-	sshClient.Transfer(src, tgt)
+	if strings.Contains(hostAndSrc, ":") {
+		hostSrc := strings.Split(hostAndSrc, ":")
+		if len(hostSrc) < 2 {
+			klog.Error("Invalid argument")
+			return
+		}
+		host, src := hostSrc[0], hostSrc[1]
+		tgt := hostAndTgt
+
+		sshClient, err := service.connectToNode(host)
+		utils.CheckErr(err)
+		sshClient.Receive(src, tgt)
+		return
+	}
+
+	klog.Error("Invalid argument")
 
 }
 
