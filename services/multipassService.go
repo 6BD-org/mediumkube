@@ -81,6 +81,12 @@ func (service MultipassService) Transfer(src string, tgt string) {
 	utils.ExecWithStdio(transferCmd)
 }
 
+// TransferR transfer file between vm and host machine
+func (service MultipassService) TransferR(src string, tgt string) {
+	transferCmd := exec.Command("multipass", "transfer", src, tgt)
+	utils.ExecWithStdio(transferCmd)
+}
+
 // AttachAndExec Execute a command on a virtual machine with stdio attached
 func (service MultipassService) AttachAndExec(node string, command []string, sudo bool) {
 	execCmd := preExecProcess(node, command, sudo)

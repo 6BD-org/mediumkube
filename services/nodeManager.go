@@ -10,6 +10,7 @@ type NodeManager interface {
 	Stop(node string)
 	Exec(node string, command []string, sudo bool) string
 	Transfer(src string, tgt string)
+	TransferR(src string, tgt string)
 	AttachAndExec(node string, command []string, sudo bool)
 	Shell(node string)
 	ExecScript(node string, script string, sudo bool)

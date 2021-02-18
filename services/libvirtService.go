@@ -258,6 +258,41 @@ func (service LibvirtService) Exec(node string, command []string, sudo bool) str
 	return ""
 }
 
+// TransferR is recursive version of Transfer
+func (service LibvirtService) TransferR(hostAndSrc string, hostAndTgt string) {
+	if strings.Contains(hostAndTgt, ":") {
+		hostTgt := strings.Split(hostAndTgt, ":")
+		if len(hostTgt) < 2 {
+			klog.Error("Invalid argument")
+			return
+		}
+		host, tgt := hostTgt[0], hostTgt[1]
+
+		src := hostAndSrc
+		sshClient, err := service.connectToNode(host)
+		utils.CheckErr(err)
+
+		sshClient.TransferR(src, tgt)
+		return
+	}
+	if strings.Contains(hostAndSrc, ":") {
+		hostSrc := strings.Split(hostAndSrc, ":")
+		if len(hostSrc) < 2 {
+			klog.Error("Invalid argument")
+			return
+		}
+		host, src := hostSrc[0], hostSrc[1]
+		tgt := hostAndTgt
+
+		sshClient, err := service.connectToNode(host)
+		utils.CheckErr(err)
+		sshClient.ReceiveR(src, tgt)
+		return
+	}
+	klog.Error("Invalid argument")
+
+}
+
 // Transfer a file between vm and local machine
 func (service LibvirtService) Transfer(hostAndSrc string, hostAndTgt string) {
 	if strings.Contains(hostAndTgt, ":") {

@@ -47,6 +47,21 @@ func GetFileDir(fullPath string) string {
 	return fullPath[:lastSlash]
 }
 
+// GetDirName get the name of a directory
+// for example:
+// the dir name of /a/b/c/ is c
+// the dir name of /a/b/c is also c.
+// NOTE: the argument must be a directory. If you use a file, you might get unexpected result
+func GetDirName(fullPath string) string {
+
+	if fullPath[len(fullPath)-1] == '/' {
+		fullPath = fullPath[:len(fullPath)-1]
+	}
+
+	splitted := strings.Split(fullPath, "/")
+	return splitted[len(splitted)-1]
+}
+
 // WalkDir list all files in directory
 func WalkDir(path string) []string {
 	files := make([]string, 0)
