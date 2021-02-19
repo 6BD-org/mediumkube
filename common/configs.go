@@ -1,5 +1,7 @@
 package common
 
+import "path"
+
 // VolumeMount mount host dir int virtual machine dir
 type VolumeMount struct {
 	Host string `yaml:"host"`
@@ -63,4 +65,8 @@ type OverallConfig struct {
 }
 
 type KVMDomainConfig struct {
+}
+
+func (config OverallConfig) LeaseFile() string {
+	return path.Join(config.TmpDir, "dnsmasq.lease")
 }

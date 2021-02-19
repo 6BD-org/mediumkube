@@ -62,7 +62,7 @@ func formatSSHAddr(addr string) string {
 }
 
 func (service LibvirtService) connectToNode(node string) (*mediumssh.SSHClient, error) {
-	addr, ok := network.Resolve(service.leasePath(), node)
+	addr, ok := network.Resolve(service.config.LeaseFile(), node)
 	if !ok {
 		klog.Error("Unable to resolve node: ", node)
 		return nil, fmt.Errorf("Unable to resolve node: %v", node)
@@ -253,8 +253,9 @@ func (service LibvirtService) Exec(node string, command []string, sudo bool) str
 
 	sshClient, err := service.connectToNode(node)
 	utils.CheckErr(err)
-	return sshClient.Execute(command, sudo)
-
+	out := sshClient.Execute(command, sudo)
+	fmt.Println(out)
+	return out
 }
 
 // TransferR is recursive version of Transfer
@@ -379,7 +380,7 @@ func (service LibvirtService) List() {
 		} else {
 			stateStr = stateMap[domainState]
 		}
-		addr, ok := network.Resolve(service.leasePath(), name)
+		addr, ok := network.Resolve(service.config.LeaseFile(), name)
 		if !ok {
 			addr = "UNAVAILABLE"
 		}
@@ -388,12 +389,6 @@ func (service LibvirtService) List() {
 		})
 	}
 	table.Render()
-}
-
-// leasePath is hardcoded as dnsmasq.lease in mediumkube's temp path
-// Do not rename or remove that file
-func (service LibvirtService) leasePath() string {
-	return path.Join(service.config.TmpDir, "dnsmasq.lease")
 }
 
 func init() {
