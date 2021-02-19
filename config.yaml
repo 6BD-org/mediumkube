@@ -17,7 +17,7 @@ host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
 host-priv-key-dir: "/home/temp/.ssh/id_rsa"
 
 image: "/home/temp/bionic.img"
-cloud-init: "./cloud-init.yaml"
+cloud-init: "/etc/mediumkube/cloud-init.yaml"
 
 nodes:
   - name: node1

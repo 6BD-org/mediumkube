@@ -32,7 +32,7 @@ func (handler RootHandler) Help() {
 // Handle handle
 func (handler RootHandler) Handle(args []string) {
 
-	if len(args) < 2 {
+	if len(args) < 1 {
 		fmt.Printf("%v\n", "Insufficient arguments\n")
 		handler.Help()
 	} else {
@@ -42,40 +42,42 @@ func (handler RootHandler) Handle(args []string) {
 			// Multipass commands are compatible
 			for _, v := range multipassDelegated {
 				if args[1] == v {
-					cmd := exec.Command("multipass", args[1:]...)
+					cmd := exec.Command("multipass", args[0:]...)
 					utils.AttachAndExec(cmd)
 					return
 				}
 			}
 		}
 
-		switch args[1] {
+		switch args[0] {
 		case "list":
-			CMD["list"].Handle(args[1:])
+			CMD["list"].Handle(args)
 		case "exec":
-			CMD["exec"].Handle(args[1:])
+			CMD["exec"].Handle(args)
 		case "render":
-			CMD["render"].Handle(args[1:])
+			CMD["render"].Handle(args)
 		case "deploy":
-			CMD["deploy"].Handle(args[1:])
+			CMD["deploy"].Handle(args)
 		case "init":
-			CMD["init"].Handle(args[1:])
+			CMD["init"].Handle(args)
 		case "reset":
-			CMD["reset"].Handle(args[1:])
+			CMD["reset"].Handle(args)
 		case "join":
-			CMD["join"].Handle(args[1:])
+			CMD["join"].Handle(args)
 		case "apply":
-			CMD["apply"].Handle(args[1:])
+			CMD["apply"].Handle(args)
 		case "purge":
-			CMD["purge"].Handle(args[1:])
+			CMD["purge"].Handle(args)
 		case "start":
-			CMD["start"].Handle(args[1:])
+			CMD["start"].Handle(args)
 		case "stop":
-			CMD["stop"].Handle(args[1:])
+			CMD["stop"].Handle(args)
 		case "shell":
-			CMD["shell"].Handle(args[1:])
+			CMD["shell"].Handle(args)
 		case "transfer":
-			CMD["transfer"].Handle(args[1:])
+			CMD["transfer"].Handle(args)
+		case "plugin":
+			CMD["plugin"].Handle(args)
 		case "help":
 			handler.Help()
 		default:
