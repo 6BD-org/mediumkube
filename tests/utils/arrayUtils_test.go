@@ -10,7 +10,7 @@ type A struct {
 	Val string
 }
 
-func testContains(t *testing.T) {
+func TestContains(t *testing.T) {
 	a := []string{"a", "B"}
 	if !utils.Contains(a, "a") {
 		t.Fail()

@@ -2,8 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"log"
 	"mediumkube/configurations"
 	"mediumkube/daemon/tasks"
+	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"sync"
@@ -32,7 +36,9 @@ func main() {
 
 	tmpFlagSet := flag.NewFlagSet("", flag.ExitOnError)
 	configDir := tmpFlagSet.String("config", "./config.yaml", "Configuration file")
-	tmpFlagSet.Parse(os.Args)
+	profiling := tmpFlagSet.Bool("p", false, "Enable Profiling")
+	profilingPort := tmpFlagSet.Int("pport", 7777, "Port of profiling service")
+	tmpFlagSet.Parse(os.Args[1:])
 	configurations.InitConfig(*configDir)
 
 	c := make(chan os.Signal)
@@ -41,7 +47,7 @@ func main() {
 
 	wg := sync.WaitGroup{}
 
-	go func() {
+	sigHandler := func() {
 		wg.Add(1)
 		defer wg.Done()
 
@@ -51,9 +57,9 @@ func main() {
 			stopDaemon()
 			tasks.CleanUpIptables()
 		}
-	}()
+	}
 
-	go func() {
+	bridgeProcessor := func() {
 		wg.Add(1)
 		defer wg.Done()
 		for on {
@@ -67,11 +73,9 @@ func main() {
 			}
 			dmux.Unlock()
 		}
-	}()
+	}
 
-	time.Sleep(1 * time.Second)
-
-	go func() {
+	dnsMasq := func() {
 		wg.Add(1)
 		defer wg.Done()
 		config := configurations.Config()
@@ -81,7 +85,22 @@ func main() {
 			time.Sleep(1 * time.Second)
 		}
 		proc.Kill()
-	}()
+	}
+
+	profiler := func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/profile", pprof.Profile)
+		klog.Infof("Profiling service starting on localhost:%v/profile", *profilingPort)
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *profilingPort), mux))
+	}
+
+	go sigHandler()
+	go bridgeProcessor()
+	time.Sleep(1 * time.Second)
+	go dnsMasq()
+	if *profiling {
+		go profiler()
+	}
 
 	wg.Wait()
 	klog.Info("Daemon exited")

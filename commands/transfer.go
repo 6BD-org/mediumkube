@@ -17,9 +17,13 @@ func (handler TransferHandler) Desc() string {
 
 func (handler TransferHandler) Help() {
 	fmt.Println("transfer file1 node1:file2")
+	handler.flagset.Usage()
 }
 
 func (handler TransferHandler) Handle(args []string) {
+
+	recursive := handler.flagset.Bool("r", false, "If true, directory is copied recursively")
+	handler.flagset.Parse(args[1:])
 	if Help(handler, args) {
 		return
 	}
@@ -29,7 +33,14 @@ func (handler TransferHandler) Handle(args []string) {
 		return
 	}
 
-	services.GetNodeManager(configurations.Config().Backend).Transfer(args[1], args[2])
+	args = handler.flagset.Args()
+
+	fmt.Println(args, *recursive)
+	if *recursive {
+		services.GetNodeManager(configurations.Config().Backend).TransferR(args[0], args[1])
+	} else {
+		services.GetNodeManager(configurations.Config().Backend).Transfer(args[0], args[1])
+	}
 
 }
 

@@ -1,12 +1,11 @@
 package network
 
 import (
-	"fmt"
-	"log"
 	"mediumkube/common"
 	"mediumkube/utils"
 
 	"github.com/vishvananda/netlink"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -27,7 +26,7 @@ func CreateNetBridge(bridge common.Bridge) error {
 		return err
 	}
 
-	log.Println("Adding bridge: ", bridge.Name)
+	klog.Info("Adding bridge: ", bridge.Name)
 	err = netlink.LinkAdd(br)
 	if err != nil {
 		return err
@@ -38,13 +37,12 @@ func CreateNetBridge(bridge common.Bridge) error {
 		return err
 	}
 
-	log.Println("Setting up")
 	err = netlink.LinkSetUp(lnk)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Assigning address: ", addr)
+	klog.Info("Assigning address: ", addr)
 	err = netlink.AddrAdd(lnk, addr)
 
 	if err != nil {
@@ -84,6 +82,7 @@ mpqemubr0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
 */
+
 // ShowBridge show details of bridge in stdout
 func ShowBridge(bridge common.Bridge) {
 	var lnk netlink.Link
@@ -92,10 +91,8 @@ func ShowBridge(bridge common.Bridge) {
 	if lnk, err = netlink.LinkByName(bridge.Name); err != nil {
 		panic(err)
 	}
-	addrs, err := netlink.AddrList(lnk, ipv4)
+	_, err = netlink.AddrList(lnk, ipv4)
 	utils.CheckErr(err)
-	fmt.Println("Name: ", lnk.Attrs().Name)
-	fmt.Println("Addr: ", addrs)
 
 }
 

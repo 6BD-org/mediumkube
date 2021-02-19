@@ -61,4 +61,29 @@ func TestWalkDir(t *testing.T) {
 	if len(files) != 2 {
 		t.Fail()
 	}
+
+	files = utils.WalkDir("..")
+	fmt.Println(files)
+
+}
+
+func TestGetDirName(t *testing.T) {
+	dirName := utils.GetDirName("a/b/c/")
+	if dirName != "c" {
+		t.Fail()
+	}
+
+	dirName = utils.GetDirName("c")
+	if dirName != "c" {
+		t.Fail()
+	}
+	dirName = utils.GetDirName("/c")
+	if dirName != "c" {
+		t.Fail()
+	}
+	dirName = utils.GetDirName("a/b/c")
+	if dirName != "c" {
+		t.Fail()
+	}
+
 }

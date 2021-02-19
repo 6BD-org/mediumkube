@@ -166,6 +166,38 @@ func (sc SSHClient) Execute(cmd []string, sudo bool) {
 	utils.CheckErr(err)
 }
 
+// mkdir mkdir on a vm and change to owner/group to current user
+func (sc SSHClient) mkdir(tgtDir string) {
+	// Make dir as root
+	sc.Execute(_mkdirCmd(tgtDir), true)
+	// Recover the ownership of dir
+	user := sc.meta.username
+	group := user
+	sc.Execute(_chownCmd(tgtDir, user, group), true)
+}
+
+// TransferR transfer a directory from host machine to vm
+func (sc SSHClient) TransferR(srcDir string, targetDir string) {
+	dirName := utils.GetDirName(srcDir)
+	sc.mkdir(path.Join(targetDir, dirName))
+
+	files := utils.WalkDir(srcDir)
+	for _, file := range files {
+		fileName := strings.TrimPrefix(file, utils.GetFileDir(srcDir))
+		tgt := path.Join(targetDir, dirName, fileName)
+		klog.Info("Transferring file: ", file)
+		src := file
+
+		sc.Transfer(src, tgt)
+
+	}
+}
+
+// ReceiveR transfer a directory from vm to host
+func (sc SSHClient) ReceiveR(srcDir string, targetDir string) {
+	klog.Warning("Not implemented")
+}
+
 // Transfer a file from local file system to a ssh server
 // This is done by reading file and send to vm's input pipe,
 // and redirect stdin to file using tee
@@ -182,13 +214,7 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 
 	tgtDir := utils.GetFileDir(targetPath)
 	if len(tgtDir) > 0 {
-		// Make dir as root
-		sc.Execute(_mkdirCmd(tgtDir), true)
-		// Recover the ownership of dir
-		user := sc.meta.username
-		group := user
-		sc.Execute(_chownCmd(tgtDir, user, group), true)
-
+		sc.mkdir(tgtDir)
 	}
 
 	wg := sync.WaitGroup{}
@@ -204,10 +230,16 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 
 	wg.Add(2)
 
+	started := false
+
 	go func() {
 		// Start a process in remote host that redirect stdin to a file
 		defer wg.Done()
-		err = sess.Run(strings.Join([]string{"tee", targetPath}, " "))
+		err = sess.Start(strings.Join([]string{"tee", targetPath}, " "))
+		utils.CheckErr(err)
+		started = true
+		err = sess.Wait()
+
 		if err != nil {
 			if !strings.Contains(err.Error(), "signal PIPE") {
 				klog.Error(err)
@@ -220,13 +252,18 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 		// Start a local process that read data from source file
 		// and write to the pipeline
 		defer wg.Done()
+		for !started {
+
+		}
 		buffer := make([]byte, 1024*4)
 		for {
 			n, err := file.Read(buffer)
+
 			if n > 0 {
 				_, errW := writer.Write(buffer[:n])
 				utils.CheckErr(errW)
 			}
+
 			if err != nil {
 				if err == io.EOF {
 					break
@@ -234,6 +271,7 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 					utils.CheckErr(err)
 				}
 			}
+
 			utils.CheckErr(err)
 		}
 		if err != nil {
