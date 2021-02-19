@@ -18,3 +18,13 @@ In order to make out system working, it is preferred that we can have a virtual 
 
 The network topology looks like this 
 ![](./network-design.png)
+
+## Profiling
+
+`mediumkubed` accepts `-p` and `-pport` flags. If `-p` is enabled, it starts a web server on port `7777` by default, then you can do
+
+```bash
+$ curl localhost:7777/profile > profile && go tool pprof profile
+```
+
+to analyze the CPU usage
