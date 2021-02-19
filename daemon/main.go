@@ -7,7 +7,7 @@ import (
 	"mediumkube/configurations"
 	"mediumkube/daemon/tasks"
 	"net/http"
-	"net/http/pprof"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"sync"
@@ -88,10 +88,9 @@ func main() {
 	}
 
 	profiler := func() {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/profile", pprof.Profile)
-		klog.Infof("Profiling service starting on localhost:%v/profile", *profilingPort)
-		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *profilingPort), mux))
+
+		klog.Infof("Profiling service starting on localhost:%v/debug/pprof", *profilingPort)
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *profilingPort), nil))
 	}
 
 	go sigHandler()

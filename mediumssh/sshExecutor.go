@@ -150,20 +150,21 @@ func (sc SSHClient) AttachAndExecute(cmd []string, sudo bool) {
 	sess.Stderr = os.Stderr
 	sess.Stdin = os.Stdin
 	sess.Stdout = os.Stdout
-
+	klog.Info(strings.Join(cmd, " "))
 	err = sess.Run(strings.Join(cmd, " "))
 	utils.CheckErr(err)
 }
 
 // Execute a command remotely. The output and err will be printed on current Stdio
-func (sc SSHClient) Execute(cmd []string, sudo bool) {
+func (sc SSHClient) Execute(cmd []string, sudo bool) string {
 	cmd = _sudo(cmd, sudo)
 	sess, err := sc.client.NewSession()
 	utils.CheckErr(err)
-	sess.Stdout = os.Stdout
-	sess.Stderr = os.Stderr
-	err = sess.Run(strings.Join(cmd, " "))
+	out, err := sess.Output(strings.Join(cmd, " "))
 	utils.CheckErr(err)
+
+	return string(out)
+
 }
 
 // mkdir mkdir on a vm and change to owner/group to current user
