@@ -11,11 +11,11 @@ func main() {
 
 	// Setup global config
 	tmpFlagSet := flag.NewFlagSet("", flag.ExitOnError)
-	configDir := tmpFlagSet.String("config", "./config.yaml", "Configuration file")
-	tmpFlagSet.Parse(os.Args)
+	configDir := tmpFlagSet.String("config", "/etc/mediumkube/config.yaml", "Configuration file")
+	tmpFlagSet.Parse(os.Args[1:])
 	configurations.InitConfig(*configDir)
 	// Handle command
-	commands.RootHandler{}.Handle(os.Args)
+	commands.RootHandler{}.Handle(tmpFlagSet.Args())
 
 }
 

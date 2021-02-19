@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"mediumkube/common"
+	"mediumkube/configurations"
 	"mediumkube/utils"
 	"os"
 	"text/template"
@@ -34,8 +35,8 @@ func readTemplate(templatePath string) string {
 }
 
 // Render render the template using config object
-func Render(configPath string, templatePath string, outPath string) {
-	config := parseConfig(configPath)
+func Render(templatePath string, outPath string) {
+	config := configurations.Config()
 	templateStr := readTemplate(templatePath)
 
 	tmpl, err := template.New("cloudInit").Funcs(sprig.TxtFuncMap()).Parse(templateStr)
@@ -57,7 +58,6 @@ type RenderHandler struct {
 
 func (handler RenderHandler) Handle(args []string) {
 
-	configPath := handler.flagSet.String("config", "./config.yaml", "Path to config file")
 	templatePath := handler.flagSet.String("template", "./cloud-init.yaml.tmpl", "Path to cloud init yaml template")
 	outPath := handler.flagSet.String("out", "./cloud-init.yaml", "Path of output yaml")
 
@@ -67,7 +67,7 @@ func (handler RenderHandler) Handle(args []string) {
 		return
 	}
 
-	Render(*configPath, *templatePath, *outPath)
+	Render(*templatePath, *outPath)
 
 }
 

@@ -52,6 +52,18 @@ $ ./mediumkube purge node1
 
 Please note that you cannot purge a machine that is created by another backend! So if you want to purge a multipass machine, either use `multipass` command or change backend in config file.
 
+## Install mediumkube
+
+Another option of using mediumkube is install it to your linux system directly
+
+```bash
+# This command will compile mediumkube and copy binarys and configurations to your system.
+# The configuration files & templates are placed under /etc/mediumkube/
+# The binaries are placed under /usr/local/bin
+$ make clean install
+
+```
+
 ## Use proxy
 
 Templating engine supports proxy. So you can access `http-proxy` in your config file by using `{{ .HTTPProxy }}`. You can use any proxy, but we suggest you to deploy your proxy to listen on bridge, so that the system becomes "portable", because your nodes won't suffer from configuration changes as the network environment changes due to DHCP or switching between wifis. 
@@ -99,6 +111,28 @@ To purge a node (which means stop it, then delete it along with storages attache
 
 $ mediumkube purge node1
 ```
+
+## Plugins
+Plugins are standalone executable units in mediumkube, they can be invoked separately with arbitrary number of arguments. The use case of plugins would be hooks integrated with main tasks such as `deploy`, `init` and `join`, etc. 
+
+To see a list of plugins 
+
+```bash
+
+$ mediumkube plugin list
+```
+
+You can also see descriptions of plugins and execute them manually using `mediumkube` cli
+
+```bash
+
+# Execute a plugin
+$ mediumkube plugin exec [plugin name] arg1 arg2 arg3
+
+# Show descriptions of a plugin
+$ mediumkube plugin desc [plugin name]
+```
+
 
 # [DEPRECATED] Setup a k8s cluster using multipass
 
@@ -314,59 +348,6 @@ configuring kube-init section properly.
 ```
 $ ./main init --config ./config.yaml
 ```
-
-## Logging
-
-To check the log of multipass,
-
-```bash
-journalctl --unit snap.multipass*
-```
-
-If you are executing commands in the virtual machine during init, make sure to save logs to file
-for analysis. In cloud-init
-
-```yaml
-runcmd:
-    - sh dosomething.sh >> /var/log/bootstrap/dosomething.log
-```
-
-We support logging side car. This will mount the log directort inside the vm to host machine, and start go routines to
-watch those file changes.
-
-Mounting in init stage is not officially supported, so we implemented it with ugly loop inside a go routine. This should be fixed as soon as multipass supports mounting. (Also think about watching ssh files)
-
-In order to specify the log directory in vm, add this config
-
-```yaml
-vm_log_dir: /var/log/bootstrap
-```
-The logs will be mounted to tmp directory of `mediumkube`
-
-## About CLI
-For ease of development, this cli only contains 2 layers of command hierarchy and key word arguments, like following
-
-```
-$ main-command sub-command --key1 val1 --key2 val2
-```
-
-excepting `help`
-
-```
-# Get help of available sub-commands
-$ main-command help 
-
-# Get help of particular sub-command
-$ main-command sub-command help
-```
-
-You can extend the layer, of course, by intercepting args and pass them through to another command handler, then you get this
-
-```
-$ main-command sub-command-1 sub-command-2 --key val
-```
-
-But I personally don't encourage either adding more layers or mixing up positional and keyword arguments.
 
 
 ## Install resource to kubernetes using MediumKube

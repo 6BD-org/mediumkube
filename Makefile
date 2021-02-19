@@ -16,3 +16,9 @@ clean:
 daemon: clean mediumkubed
 	sudo ./mediumkubed
 
+install: mediumkube mediumkubed
+	sudo cp mediumkube /usr/local/bin/mediumkube
+	sudo cp mediumkubed /usr/local/bin/mediumkubed
+	sudo mkdir -p /etc/mediumkube
+	sudo cp config.yaml /etc/mediumkube/config.yaml
+
