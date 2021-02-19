@@ -22,6 +22,9 @@ func ExecWithStdio(cmd *exec.Cmd) (string, error) {
 	stdOutIn, _ := cmd.StdoutPipe()
 	stdErrIn, _ := cmd.StderrPipe()
 
+	defer stdOutIn.Close()
+	defer stdErrIn.Close()
+
 	err = cmd.Start()
 	CheckErr(err)
 
@@ -40,7 +43,6 @@ func ExecWithStdio(cmd *exec.Cmd) (string, error) {
 	CheckErr(errCpyOut)
 	CheckErr(errCpyErr)
 	err = cmd.Wait()
-
 	return string(stdoutBuf.Bytes()), err
 }
 

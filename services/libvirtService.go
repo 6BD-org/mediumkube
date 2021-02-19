@@ -253,9 +253,8 @@ func (service LibvirtService) Exec(node string, command []string, sudo bool) str
 
 	sshClient, err := service.connectToNode(node)
 	utils.CheckErr(err)
-	sshClient.Execute(command, sudo)
+	return sshClient.Execute(command, sudo)
 
-	return ""
 }
 
 // TransferR is recursive version of Transfer

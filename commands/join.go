@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"mediumkube/configurations"
 	"mediumkube/services"
 	"mediumkube/utils"
 )
@@ -40,7 +41,7 @@ func (handler JoinHandler) Handle(args []string) {
 
 	// Step 2. Execute that command on node to join
 
-	mpSvc := services.GetMultipassService()
+	mpSvc := services.GetNodeManager(configurations.Config().Backend)
 
 	tokenCmd := []string{"kubeadm", "token", "create", "--print-join-command"}
 

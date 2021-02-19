@@ -24,7 +24,7 @@ The network topology looks like this
 `mediumkubed` accepts `-p` and `-pport` flags. If `-p` is enabled, it starts a web server on port `7777` by default, then you can do
 
 ```bash
-$ curl localhost:7777/profile > profile && go tool pprof profile
+$ curl localhost:7777/debug/pprof/profile > profile && go tool pprof profile
 ```
 
 to analyze the CPU usage
