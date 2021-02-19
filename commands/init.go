@@ -7,6 +7,7 @@ import (
 	"mediumkube/common"
 	"mediumkube/configurations"
 	"mediumkube/k8s"
+	"mediumkube/plugins"
 	"mediumkube/services"
 	"mediumkube/utils"
 	"os"
@@ -57,8 +58,7 @@ func (handler InitHandler) Handle(args []string) {
 	// TODO: Add post-command to enable kubectl
 
 	log.Printf("Doing post-init configurations")
-	services.GetNodeManager(overallConfig.Backend).ExecScript(*node, "./k8s/scripts/post-init.sh", false)
-
+	plugins.Plugins["kube_post_init"].Exec(*node)
 	// Transfer kube-config
 	log.Printf("Mkdir %v\n", utils.GetFileDir(k8s.KubeConfigPath(overallConfig)))
 
