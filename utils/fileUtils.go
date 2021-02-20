@@ -54,12 +54,10 @@ func GetFileDir(fullPath string) string {
 // NOTE: the argument must be a directory. If you use a file, you might get unexpected result
 func GetDirName(fullPath string) string {
 
-	if fullPath[len(fullPath)-1] == '/' {
-		fullPath = fullPath[:len(fullPath)-1]
-	}
+	abs, err := filepath.Abs(fullPath)
+	CheckErr(err)
+	return filepath.Base(abs)
 
-	splitted := strings.Split(fullPath, "/")
-	return splitted[len(splitted)-1]
 }
 
 // WalkDir list all files in directory
@@ -94,4 +92,15 @@ func Copy(src string, tgt string) {
 
 	_, err = io.Copy(tgtFile, srcFile)
 	CheckErr(err)
+}
+
+// TrimPrefix Trims prefix directory
+func TrimPrefix(file string, prefix string) string {
+	fileAbs, err := filepath.Abs(file)
+	CheckErr(err)
+
+	prefixAbs, err := filepath.Abs(prefix)
+	CheckErr(err)
+
+	return strings.TrimPrefix(fileAbs, prefixAbs)
 }

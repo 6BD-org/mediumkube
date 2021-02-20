@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mediumkube/utils"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -53,7 +54,6 @@ func TestGetFileDir(t *testing.T) {
 
 func TestFileMode(t *testing.T) {
 	fmt.Println(os.FileMode(0666).String())
-
 }
 
 func TestWalkDir(t *testing.T) {
@@ -86,4 +86,17 @@ func TestGetDirName(t *testing.T) {
 		t.Fail()
 	}
 
+}
+
+func TestPath(t *testing.T) {
+	fmt.Println("On Unix:")
+	fmt.Println(filepath.Base("/foo/bar/baz.js"))
+	fmt.Println(filepath.Base("/foo/bar/baz"))
+	fmt.Println(filepath.Base("/foo/bar/baz/"))
+	fmt.Println(filepath.Base("dev.txt"))
+	fmt.Println(filepath.Base("../todo.txt"))
+	fmt.Println(filepath.Base(".."))
+	fmt.Println(filepath.Base("."))
+	fmt.Println(filepath.Base("/"))
+	fmt.Println(filepath.Base(""))
 }
