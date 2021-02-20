@@ -2,6 +2,25 @@
 
 MediumKubed is daemon for mediumkube. This is introduced to support `libvirt` backend. 
 
+## Get started
+
+In order to use `mediumkubed`, you need to install it first
+```bash
+$ make clean install
+```
+
+This command compiles the project, copies around binary files, configuration files, creates some necessary directories and register `mediumkubed` to systemd. Then you can start the daemon using
+
+```bash
+$ systemctl start mediumkube
+```
+
+You can check logs using 
+
+```
+$ journalctl -u mediumkube
+```
+
 ## What does mediumkubed does?
 - Maintain a virtual bridge network
 - Monitor and configure virtual bridge
