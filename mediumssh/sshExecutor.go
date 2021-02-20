@@ -180,11 +180,19 @@ func (sc SSHClient) mkdir(tgtDir string) {
 // TransferR transfer a directory from host machine to vm
 func (sc SSHClient) TransferR(srcDir string, targetDir string) {
 	dirName := utils.GetDirName(srcDir)
+	// First we need to create the dir
+	// For example we are tranfer a/b/c/ to /root/tmp of vm
+	// Which contains three files a/b/c/1 a/b/c/2 a/b/c/3
+	// We are expecting to see /root/tmp/c/1 /root/tmp/c/2 /root/tmp/c/3
+	// on vm after the operation succeeds
+
+	// So first step is to create dir /root/tmp/c
 	sc.mkdir(path.Join(targetDir, dirName))
 
 	files := utils.WalkDir(srcDir)
 	for _, file := range files {
-		fileName := strings.TrimPrefix(file, utils.GetFileDir(srcDir))
+		fileName := utils.TrimPrefix(file, srcDir)
+		// join /root/tmp, c, and the actual file name
 		tgt := path.Join(targetDir, dirName, fileName)
 		klog.Info("Transferring file: ", file)
 		src := file
@@ -196,7 +204,21 @@ func (sc SSHClient) TransferR(srcDir string, targetDir string) {
 
 // ReceiveR transfer a directory from vm to host
 func (sc SSHClient) ReceiveR(srcDir string, targetDir string) {
-	klog.Warning("Not implemented")
+	dirName := utils.GetDirName(srcDir)
+	err := os.MkdirAll(
+		path.Join(targetDir, dirName),
+		os.FileMode(0755),
+	)
+	utils.CheckErr(err)
+
+	files := SFTPWalk(sc.client, srcDir)
+	for _, file := range files {
+		fileName := utils.TrimPrefix(file, srcDir)
+		tgt := path.Join(targetDir, dirName, fileName)
+		src := file
+		klog.Info("Receiving file: ", file)
+		sc.Receive(src, tgt)
+	}
 }
 
 // Transfer a file from local file system to a ssh server
@@ -289,10 +311,7 @@ func (sc SSHClient) Transfer(srcPath string, targetPath string) {
 // Receive a file from src in vm and save as tgt on host machine
 func (sc SSHClient) Receive(src string, tgt string) {
 	tgtDir := utils.GetFileDir(tgt)
-	if len(tgtDir) > 0 {
-		mkdirCmd := _mkdirCmd(tgtDir)
-		utils.ExecWithStdio(exec.Command(mkdirCmd[0], mkdirCmd[1:]...))
-	}
+	os.MkdirAll(tgtDir, os.FileMode(0755))
 
 	wg := sync.WaitGroup{}
 	wg.Add(2) // receiver
@@ -304,7 +323,7 @@ func (sc SSHClient) Receive(src string, tgt string) {
 
 	go func() {
 		defer wg.Done()
-		file, err := os.OpenFile(tgt, os.O_CREATE|os.O_RDWR, os.FileMode(0755))
+		file, err := os.OpenFile(tgt, os.O_CREATE|os.O_RDWR, os.FileMode(0664))
 		defer file.Close()
 		writer := bufio.NewWriter(file)
 
