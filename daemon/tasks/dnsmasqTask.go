@@ -69,6 +69,9 @@ func StartDnsmasq(bridge common.Bridge, config common.OverallConfig) *os.Process
 		}
 		time.Sleep(1 * time.Second)
 	}
+
+	leaseFile := path.Join(config.TmpDir, "dnsmasq.lease")
+
 	cmd := exec.Command(
 		"dnsmasq",
 		"--keep-in-foreground",
@@ -83,8 +86,7 @@ func StartDnsmasq(bridge common.Bridge, config common.OverallConfig) *os.Process
 		"--dhcp-no-override",
 		"--dhcp-authoritative",
 		// NEVER change lease file.
-		fmt.Sprintf("--dhcp-leasefile=%v", path.Join(config.TmpDir, "dnsmasq.lease")),
-		fmt.Sprintf("--dhcp-hostsfile=%v", path.Join(config.TmpDir, "dnsmasq.hosts")),
+		fmt.Sprintf("--dhcp-leasefile=%v", leaseFile),
 		fmt.Sprintf("--dhcp-range=%v", fmt.Sprintf("%v.2,%v.254,infinite", subnet, subnet)),
 	)
 	preapare()

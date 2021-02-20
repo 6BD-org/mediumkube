@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -44,6 +45,7 @@ func main() {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, os.Kill)
+	signal.Notify(c, syscall.SIGTERM)
 
 	wg := sync.WaitGroup{}
 
@@ -56,6 +58,7 @@ func main() {
 			klog.Info("Sig recvd: ", sig)
 			stopDaemon()
 			tasks.CleanUpIptables()
+
 		}
 	}
 

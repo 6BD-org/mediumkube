@@ -1,0 +1,14 @@
+# This is service unit for mediumkube
+
+[Unit]
+Description=mediumkube daemon
+Documentation=https://github.com/6BD-org/mediumkube
+After=network.target syslog.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/mediumkube.service.start.sh
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

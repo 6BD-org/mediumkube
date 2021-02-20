@@ -4,9 +4,6 @@ import (
 	"mediumkube/common"
 	"mediumkube/network"
 	"mediumkube/utils"
-
-	"github.com/coreos/go-iptables/iptables"
-	"k8s.io/klog/v2"
 )
 
 // IPMode how rules are inserted into iptables
@@ -146,26 +143,10 @@ func ProcessIptables(bridge common.Bridge) {
 
 // CleanUpIptables clean up iptables when exiting
 func CleanUpIptables() {
-	iptable, err := iptables.New()
-	if err != nil {
-		klog.Error(err)
-		return
-	}
+
 	for _, cr := range ruleRegistry {
 		chain := cr[0]
 		rules := cr[1:]
-		exists, err := iptable.Exists(
-			table,
-			chain,
-			rules...,
-		)
-		if err != nil {
-			klog.Error(err)
-			return
-		}
-		if exists {
-			klog.Info("Deleting: ", rules)
-			iptable.Delete(table, chain, rules...)
-		}
+		network.DeleteIfExists(chain, rules)
 	}
 }

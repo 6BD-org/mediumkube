@@ -1,3 +1,5 @@
+SYSTEMD_DIR=/lib/systemd/system
+
 test:
 	go clean -testcache
 	go test ./tests/...
@@ -17,8 +19,21 @@ daemon: clean mediumkubed
 	sudo ./mediumkubed
 
 install: mediumkube mediumkubed
+	sudo mkdir -p /etc/mediumkube /var/run/mediumkube
+
+	# Copy binary and default configuration files
 	sudo cp mediumkube /usr/local/bin/mediumkube
 	sudo cp mediumkubed /usr/local/bin/mediumkubed
-	sudo mkdir -p /etc/mediumkube
 	sudo cp config.yaml /etc/mediumkube/config.yaml
+	
+	# Register systemd service
+	sudo cp mediumkube.service.start.sh /usr/local/sbin && sudo chmod +x /usr/local/sbin/mediumkube.service.start.sh
+	sudo cp mediumkube.service.stop.sh /usr/local/sbin && sudo chmod +x /usr/local/sbin/mediumkube.service.stop.sh
+	sudo cp mediumkube.service $(SYSTEMD_DIR)/mediumkube.service
+	sudo systemd-analyze verify $(SYSTEMD_DIR)/mediumkube.service
+
+	# Reload and enable service
+	sudo systemctl daemon-reload
+	sudo systemctl enable mediumkube
+	
 
