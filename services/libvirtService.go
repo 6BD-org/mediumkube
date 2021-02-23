@@ -21,19 +21,6 @@ import (
 )
 
 const (
-	// 	networkTemplate string = `
-	// <network>
-	// 	<name>%v</name>
-	// 	<forward/>
-	// 	<bridge name='%v'/>
-	// 	<ip address='%v.1' netmask='255.255.255.0'>
-	// 		<dhcp>
-	// 			<range start='%v.2' end='%v.254'></range>
-	// 		</dhcp>
-	// 	</ip>
-	// </network>
-	// `
-
 	cloudInitMetaTemplate string = `
 instance-id: id-%v
 local-hostname: %v`
@@ -177,7 +164,7 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string
 
 		// Step2 Copy image
 		srcImg := service.config.Image
-		tgtImg := path.Join(service.config.TmpDir, fmt.Sprintf("%v-os.img", n.Name))
+		tgtImg := service.config.NodeDiskImage(n.Name)
 		log.Println("Copying image file from", srcImg, "to", tgtImg)
 
 		copyAndResizeMedia(srcImg, tgtImg, n.DISK)

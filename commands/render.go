@@ -46,7 +46,6 @@ func Render(templatePath string, outPath string) {
 	os.Remove(outPath)
 	out, err = os.Create(outPath)
 	utils.CheckErr(err)
-
 	err = tmpl.Execute(out, config)
 	utils.CheckErr(err)
 }
