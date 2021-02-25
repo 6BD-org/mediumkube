@@ -80,7 +80,7 @@ func GetMagnitudeAndUnitStr(str string) (float64, string, error) {
 func Convert(str string, to Unit) float64 {
 	mag, unit, err := GetMagnitudeAndUnit(str)
 	CheckErr(err)
-	return mag * float64(unit)
+	return mag * float64(unit) / float64(to)
 }
 
 func init() {

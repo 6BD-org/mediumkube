@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"mediumkube/common"
@@ -8,11 +9,13 @@ import (
 	"mediumkube/mediumssh"
 	"mediumkube/network"
 	"mediumkube/utils"
+	"mediumkube/utils/virtutils"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/libvirt/libvirt-go"
@@ -25,8 +28,9 @@ const (
 instance-id: id-%v
 local-hostname: %v`
 
-	sshUser string = "ubuntu"
-	sshPort int    = 22
+	sshUser   string  = "ubuntu"
+	sshPort   int     = 22
+	STDOUT_FD uintptr = 0
 )
 
 var (
@@ -74,20 +78,6 @@ func meta(nodeName string) string {
 	return fmt.Sprintf(cloudInitMetaTemplate, nodeName, nodeName)
 }
 
-// func (service LibvirtService) createNetwork(name string, bridge common.Bridge) error {
-// 	netDestroyCmd := exec.Command(
-// 		"virsh",
-// 		"net-destroy",
-// 		name,
-// 	)
-// 	utils.ExecWithStdio(netDestroyCmd)
-
-// 	xml := networkXML(name, bridge)
-// 	log.Println(xml)
-// 	_, err := service.conn.NetworkCreateXML(xml)
-// 	return err
-// }
-
 func (service LibvirtService) createCloudInitCD(cloudInit string, nodeName string) string {
 
 	userData := path.Join(service.config.TmpDir, "user-data")
@@ -123,28 +113,116 @@ func copyAndResizeMedia(src string, tgt string, size string) {
 	utils.CheckErr(err)
 }
 
-// createDomain Create a domain, overwriting disk image
-func (service LibvirtService) createDomain(name string, cpu string, memory string, disk string, net string, image string, cloudInitImg string) {
+// CreateDomain Create a domain, overwriting disk image
+func (service LibvirtService) CreateDomain(name string, cpu string, memory string, disk string, net string, image string, cloudInitImg string) {
 	// Step1 Create disk
-	diskImage := path.Join(service.config.TmpDir, fmt.Sprintf("%v-disk.img", name))
-	err := os.RemoveAll(diskImage)
-	utils.CheckErr(err)
-	cmd := exec.Command(
-		"virt-install",
-		"-n", name,
-		"--os-type", "generic",
-		// "--os-variant", "ubuntu",
-		"--memory", fmt.Sprintf("%v", utils.Convert(memory, utils.M)),
-		"--vcpus", cpu,
-		"--import",
-		"--disk", fmt.Sprintf("path=%v", image),
-		"--disk", fmt.Sprintf("path=%v,device=cdrom", cloudInitImg),
-		// "--disk", fmt.Sprintf("path=%v,bus=%v,size=%v", diskImage, "virtio", ,
-		"--network", fmt.Sprintf("bridge=%v", net),
-		"--check", "path_in_use=off",
-		"--nographics",
+	// err := os.RemoveAll(diskImage)
+	// utils.CheckErr(err)
+	// cmd := exec.Command(
+	// 	"virt-install",
+	// 	"-n", name,
+	// 	"--os-type", "generic",
+	// 	// "--os-variant", "ubuntu",
+	// 	"--memory", fmt.Sprintf("%v", utils.Convert(memory, utils.M)),
+	// 	"--vcpus", cpu,
+	// 	"--import",
+	// 	"--disk", fmt.Sprintf("path=%v", image),
+	// 	"--disk", fmt.Sprintf("path=%v,device=cdrom", cloudInitImg),
+	// 	// "--disk", fmt.Sprintf("path=%v,bus=%v,size=%v", diskImage, "virtio", ,
+	// 	"--network", fmt.Sprintf("bridge=%v", net),
+	// 	"--check", "path_in_use=off",
+	// 	"--nographics",
+	// )
+	// utils.AttachAndExec(cmd)
+	xml, err := virtutils.GetDeploymentConfig(
+		common.NewDomainCreationParam(
+			name, cpu, memory, image, cloudInitImg, net,
+		),
 	)
-	utils.AttachAndExec(cmd)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	domain, err := service.conn.DomainDefineXMLFlags(xml, libvirt.DOMAIN_DEFINE_VALIDATE)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	err = domain.Create()
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	bufStr := bytes.NewBufferString("")
+	var handleWatch int = -1
+
+	mux := sync.Mutex{}
+	f := os.NewFile(STDOUT_FD, "")
+
+	steamOut := func(stream *libvirt.Stream, cbType libvirt.StreamEventType) {
+		mux.Lock()
+		defer mux.Unlock()
+
+		if cbType&libvirt.STREAM_EVENT_READABLE > 0 {
+
+			for {
+				ioBuffer := make([]byte, 1024)
+				n, err := stream.Recv(ioBuffer)
+				if n <= 0 {
+					break
+				}
+				if err != nil {
+					break
+				}
+				bufStr.Write(ioBuffer[:n])
+			}
+			if bufStr.Len() > 0 {
+				libvirt.EventUpdateHandle(handleWatch, libvirt.EVENT_HANDLE_WRITABLE)
+			}
+		}
+	}
+
+	eventHandle := func(watch int, file int, events libvirt.EventHandleType) {
+		mux.Lock()
+		defer mux.Unlock()
+		if events&libvirt.EVENT_HANDLE_WRITABLE > 0 {
+			f.Write(bufStr.Bytes())
+			bufStr.Reset()
+			libvirt.EventUpdateHandle(handleWatch, 0)
+		}
+	}
+
+	stream, err := service.conn.NewStream(libvirt.STREAM_NONBLOCK)
+
+	err = domain.OpenConsole("", stream, 0)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	handleWatch, err = libvirt.EventAddHandle(1, 0, eventHandle)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	if handleWatch < 0 {
+		klog.Error("Unable to register event handler")
+	}
+
+	err = stream.EventAddCallback(libvirt.STREAM_EVENT_READABLE, steamOut)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	for {
+		if err := libvirt.EventRunDefaultImpl(); err != nil {
+			klog.Error(err)
+		}
+	}
 }
 
 // LibvirtService is implementation of node manager
@@ -171,7 +249,7 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string
 
 		// Step3 Create domain
 		log.Println("Launching domain...")
-		service.createDomain(
+		service.CreateDomain(
 			n.Name,
 			n.CPU,
 			n.MEM,
@@ -188,51 +266,57 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string
 // If the domain is running, this command will stop it
 // then delete the domain along with storages attached to it
 func (service LibvirtService) Purge(node string) {
-	// Step1 destory
-	cmdDestory := exec.Command(
-		"virsh",
-		"destroy",
-		node,
-	)
+
 	domain, err := service.conn.LookupDomainByName(node)
-	utils.CheckErr(err)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
 
 	// Destroy the domain if it is running
 	if state, _, err := domain.GetState(); err == nil && state == libvirt.DOMAIN_RUNNING {
 		klog.Info("Stopping node", node)
-		_, err = utils.ExecWithStdio(cmdDestory)
-		utils.CheckErr(err)
+		err := domain.Destroy()
+		if err != nil {
+			klog.Error(err)
+		}
 	}
 
-	// Step2 undefine
-	cmdUndefine := exec.Command(
-		"virsh",
-		"undefine",
-		node,
-		"--remove-all-storage",
-	)
-	_, err = utils.ExecWithStdio(cmdUndefine)
-	utils.CheckErr(err)
+	err = domain.Undefine()
+	if err != nil {
+		klog.Error(err)
+	}
 
+	err = os.Remove(service.config.NodeDiskImage(node))
+	if err != nil {
+		klog.Error(err)
+	}
 }
 
 // Start start a domain
 func (service LibvirtService) Start(node string) {
-	cmd := exec.Command(
-		"virsh", "start", node,
-	)
-	_, err := utils.ExecWithStdio(cmd)
-	utils.CheckErr(err)
+	domain, err := service.conn.LookupDomainByName(node)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	err = domain.Create()
+	if err != nil {
+		klog.Error(err)
+	}
 }
 
 // Stop stop a domain gracefully
 func (service LibvirtService) Stop(node string) {
-	cmd := exec.Command(
-		"virsh", "destroy", node, "--graceful",
-	)
-
-	_, err := utils.ExecWithStdio(cmd)
-	utils.CheckErr(err)
+	domain, err := service.conn.LookupDomainByName(node)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	err = domain.DestroyFlags(libvirt.DOMAIN_DESTROY_GRACEFUL)
+	if err != nil {
+		klog.Error(err)
+	}
 }
 
 // Exec a command in a domain and return output
@@ -380,6 +464,7 @@ func (service LibvirtService) List() {
 
 func init() {
 	log.Println("Initing socket connection")
+	libvirt.EventRegisterDefaultImpl()
 	conn, err := libvirt.NewConnect("qemu:///system")
 	if err != nil {
 		klog.Error("Fail to connect to libvirt: ", err)

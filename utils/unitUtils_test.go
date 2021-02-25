@@ -1,6 +1,9 @@
 package utils
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 func TestGetMagAndUnit(t *testing.T) {
 	str := "100Gi"
@@ -50,5 +53,9 @@ func TestGetMagAndUnit(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	}
+
+	str = "2G"
+	cvted := Convert(str, M)
+	log.Println(cvted)
 
 }
