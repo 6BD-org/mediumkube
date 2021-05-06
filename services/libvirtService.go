@@ -115,11 +115,11 @@ func copyAndResizeMedia(src string, tgt string, size string) {
 
 // CreateDomain Create a domain, overwriting disk image
 func (service LibvirtService) CreateDomain(name string, cpu string, memory string, disk string, net string, image string, cloudInitImg string) {
-
+	param := common.NewDomainCreationParam(
+		name, cpu, memory, image, cloudInitImg, net,
+	)
 	xml, err := virtutils.GetDeploymentConfig(
-		common.NewDomainCreationParam(
-			name, cpu, memory, image, cloudInitImg, net,
-		),
+		param,
 	)
 	if err != nil {
 		klog.Error(err)

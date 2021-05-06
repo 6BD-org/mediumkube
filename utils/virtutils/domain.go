@@ -72,10 +72,12 @@ const domainTmplKvm = `
 			<address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
 		</controller>
   
-
+		
 		<interface type='bridge'>
 			<source bridge='{{.Bridge}}'/>
 		</interface>
+		
+
 		<serial type='pty'>
 			<target type='isa-serial' port='0'>
 			<model name='isa-serial'/>

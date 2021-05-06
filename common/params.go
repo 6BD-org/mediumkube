@@ -12,6 +12,7 @@ type DomainCreationParam struct {
 	CloudInitImage string
 	Bridge         string
 	Type           string // Need to be determined at rumtime
+
 }
 
 // NewDomainCreationParam Nothing interesting
