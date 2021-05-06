@@ -2,20 +2,21 @@
 backend: "libvirt"
 
 bridge:
-  name: "mediumkube-br1"
-  inet: 11.114.114.1/24
+  name: "mediumkube-br0"
+  inet: 10.114.114.1/24
   host: "enp0s31f6"
 
 overlay:
   master: 172.16.223.54 # master node ip. Must be accessable from all other nodes
   etcd-port: 6872 # simplified config. Avoid loops
   flannel:
+    network: 10.114.114.0/16
     etcd-prefix: "/xmbsmdsj.co.uk/network"
-    iface: "mediumkube-br1" # 
+    iface: "mediumkube-br0" # 
     backend: "vxlan"
 
-http-proxy: "http://11.114.114.1:1091"
-https-proxy: "http://11.114.114.1:1091"
+http-proxy: "http://10.114.114.1:1091"
+https-proxy: "http://10.114.114.1:1091"
 # It is suggested that you use multipass bridge network 
 # in case of ip change
 
@@ -39,9 +40,9 @@ nodes:
     disk: "20G"
 
   - name: node3
-    cpu: "2"
-    mem: "2G"
-    disk: "20G"
+    cpu: "1"
+    mem: "1G"
+    disk: "10G"
 
 # see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
 # see https://coreos.com/flannel/docs/latest/kubernetes.html for Flannel guides
