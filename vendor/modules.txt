@@ -10,6 +10,8 @@ github.com/Masterminds/sprig
 # github.com/coreos/go-iptables v0.4.5
 ## explicit
 github.com/coreos/go-iptables/iptables
+# github.com/coreos/go-semver v0.3.0
+github.com/coreos/go-semver/semver
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/go-logr/logr v0.2.0
@@ -75,6 +77,15 @@ github.com/vishvananda/netlink
 github.com/vishvananda/netlink/nl
 # github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df
 github.com/vishvananda/netns
+# go.etcd.io/etcd/api/v3 v3.5.0-alpha.0
+go.etcd.io/etcd/api/v3/version
+# go.etcd.io/etcd/client/v2 v2.305.0-alpha.0
+## explicit
+go.etcd.io/etcd/client/v2
+# go.etcd.io/etcd/pkg/v3 v3.5.0-alpha.0
+go.etcd.io/etcd/pkg/v3/pathutil
+go.etcd.io/etcd/pkg/v3/srv
+go.etcd.io/etcd/pkg/v3/types
 # golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 ## explicit
 golang.org/x/crypto/blowfish

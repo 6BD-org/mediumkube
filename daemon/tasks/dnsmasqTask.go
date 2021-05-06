@@ -56,7 +56,13 @@ func preapare() {
 // StartDnsmasq for DNS and NAT
 func StartDnsmasq(bridge common.Bridge, config common.OverallConfig) *os.Process {
 	subnet := bridgeSubNet(bridge)
+	timeout := 100
+	counter := 0
 	for {
+		if counter == timeout {
+			break
+		}
+		counter++
 		_, err := netlink.LinkByName(bridge.Name)
 		if err != nil {
 			_, ok := err.(netlink.LinkNotFoundError)

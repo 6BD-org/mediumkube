@@ -2,16 +2,22 @@ package common
 
 import "path"
 
+type Overlay struct {
+	Master   string  `yaml:"master"`
+	EtcdPort int     `yaml:"etcd-port"`
+	Flannel  Flannel `yaml:"flannel"`
+}
+
+type Flannel struct {
+	EtcdPrefix string `yaml:"etcd-prefix"`
+	Iface      string `yaml:"iface"`
+	Backend    string `yaml:"backend"`
+}
+
 // VolumeMount mount host dir int virtual machine dir
 type VolumeMount struct {
 	Host string `yaml:"host"`
 	VM   string `yaml:"vm"`
-}
-
-// Network config for node in libvirt mode
-type Network struct {
-	Name string `yaml:"name"`
-	IP   string `yaml:"ip"`
 }
 
 // NodeConfig Config for each noed. "node" field  in config yaml
@@ -52,6 +58,7 @@ type OverallConfig struct {
 	HTTPProxy       string       `yaml:"http-proxy,omitempty"`
 	Backend         string       `yaml:"backend"`
 	Bridge          Bridge       `yaml:"bridge"`
+	Overlay         Overlay      `yaml:"overlay"` // Overlay network configuration
 	NodeConfig      []NodeConfig `yaml:"nodes"`
 	Image           string       `yaml:"image"`
 	CloudInit       string       `yaml:"cloud-init"`
