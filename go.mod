@@ -16,6 +16,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/sftp v1.12.0
 	github.com/vishvananda/netlink v1.1.0
+	go.etcd.io/etcd/client/v2 v2.305.0-alpha.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776

@@ -20,6 +20,7 @@ daemon: clean mediumkubed
 
 install: mediumkube mediumkubed
 	sudo mkdir -p /etc/mediumkube /var/run/mediumkube
+	sudo mkdir -p /etc/mediumkube/flannel /var/run/mediumkube/flannel
 
 	# Copy binary and default configuration files
 	sudo cp mediumkube /usr/local/bin/mediumkube

@@ -115,25 +115,7 @@ func copyAndResizeMedia(src string, tgt string, size string) {
 
 // CreateDomain Create a domain, overwriting disk image
 func (service LibvirtService) CreateDomain(name string, cpu string, memory string, disk string, net string, image string, cloudInitImg string) {
-	// Step1 Create disk
-	// err := os.RemoveAll(diskImage)
-	// utils.CheckErr(err)
-	// cmd := exec.Command(
-	// 	"virt-install",
-	// 	"-n", name,
-	// 	"--os-type", "generic",
-	// 	// "--os-variant", "ubuntu",
-	// 	"--memory", fmt.Sprintf("%v", utils.Convert(memory, utils.M)),
-	// 	"--vcpus", cpu,
-	// 	"--import",
-	// 	"--disk", fmt.Sprintf("path=%v", image),
-	// 	"--disk", fmt.Sprintf("path=%v,device=cdrom", cloudInitImg),
-	// 	// "--disk", fmt.Sprintf("path=%v,bus=%v,size=%v", diskImage, "virtio", ,
-	// 	"--network", fmt.Sprintf("bridge=%v", net),
-	// 	"--check", "path_in_use=off",
-	// 	"--nographics",
-	// )
-	// utils.AttachAndExec(cmd)
+
 	xml, err := virtutils.GetDeploymentConfig(
 		common.NewDomainCreationParam(
 			name, cpu, memory, image, cloudInitImg, net,
