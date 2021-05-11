@@ -6,6 +6,7 @@ import (
 	"mediumkube/common"
 	"mediumkube/network"
 	"mediumkube/utils"
+	"net"
 
 	"github.com/vishvananda/netlink"
 	"k8s.io/klog/v2"
@@ -13,6 +14,10 @@ import (
 
 const (
 	ipv4 int = netlink.FAMILY_V4
+)
+
+var (
+	route *netlink.Route
 )
 
 // ProcessExistence Create bridge if not exists
@@ -72,4 +77,45 @@ func ProcessAddr(bridge common.Bridge) {
 		err = netlink.AddrAdd(lnk, newAddr)
 		utils.WarnErr(err)
 	}
+
+}
+
+func ProcessRoute(bridge common.Bridge, flannel common.Flannel) {
+
+	flnk, err := netlink.LinkByName("flannel.1")
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	_, cidr, err := net.ParseCIDR("10.114.115.1/24")
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	addrs, err := netlink.AddrList(flnk, ipv4)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	if len(addrs) == 0 {
+		klog.Error("Unable to fetch IP for flannel")
+	}
+	route = &netlink.Route{
+		Dst:       cidr,
+		LinkIndex: flnk.Attrs().Index,
+		Gw:        net.IPv4(0, 0, 0, 0),
+	}
+
+	err = netlink.RouteAdd(route)
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+}
+
+func CleanUpRoute() {
+	netlink.RouteDel(route)
 }

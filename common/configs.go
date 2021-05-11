@@ -12,6 +12,7 @@ type Flannel struct {
 	EtcdPrefix string `yaml:"etcd-prefix"`
 	Iface      string `yaml:"iface"`
 	Backend    string `yaml:"backend"`
+	Network    string `yaml:"network"`
 }
 
 // VolumeMount mount host dir int virtual machine dir

@@ -16,10 +16,10 @@ type Backend struct {
 	Type string `json:"Type"`
 }
 
-// New creates config from overall config
-func New(config *common.OverallConfig) *FlannelConfig {
+// NewConfig creates config from overall config
+func NewConfig(config *common.OverallConfig) *FlannelConfig {
 	return &FlannelConfig{
-		Network: config.Bridge.Inet,
+		Network: config.Overlay.Flannel.Network,
 		Backend: Backend{
 			Type: config.Overlay.Flannel.Backend,
 		},

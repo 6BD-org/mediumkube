@@ -15,6 +15,7 @@ func StartFlannel() *os.Process {
 		"flanneld",
 		"--etcd-endpoints", utils.EtcdEp(master, etcdPort),
 		"--etcd-prefix", configurations.Config().Overlay.Flannel.EtcdPrefix,
+		"--ip-masq",
 	)
 
 	go utils.ExecWithStdio(cmd)

@@ -12,7 +12,7 @@ overlay:
   flannel:
     network: 10.114.114.0/16
     etcd-prefix: "/xmbsmdsj.co.uk/network"
-    iface: "mediumkube-br0" # 
+    iface: "mediumkube-flannel0" # 
     backend: "vxlan"
 
 http-proxy: "http://10.114.114.1:1091"

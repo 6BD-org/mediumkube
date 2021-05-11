@@ -36,5 +36,10 @@ install: mediumkube mediumkubed
 	# Reload and enable service
 	sudo systemctl daemon-reload
 	sudo systemctl enable mediumkube
-	
+
+stop:
+	sudo systemctl stop mediumkube
+
+start:
+	sudo systemctl start mediumkube	
 

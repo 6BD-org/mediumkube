@@ -64,6 +64,7 @@ func main() {
 			klog.Info("Sig recvd: ", sig)
 			stopDaemon()
 			tasks.CleanUpIptables()
+			tasks.CleanUpRoute()
 
 		}
 	}
@@ -76,9 +77,11 @@ func main() {
 			if on {
 				time.Sleep(1 * time.Second)
 				bridge := configurations.Config().Bridge
+				flannel := configurations.Config().Overlay.Flannel
 				tasks.ProcessExistence(bridge)
 				tasks.ProcessAddr(bridge)
 				tasks.ProcessIptables(bridge)
+				tasks.ProcessRoute(bridge, flannel)
 			}
 			dmux.Unlock()
 		}
@@ -133,7 +136,7 @@ func main() {
 		}
 
 		k := strings.Join([]string{overlayConfig.Flannel.EtcdPrefix, "config"}, "/")
-		v := flannel.New(configurations.Config()).ToStr()
+		v := flannel.NewConfig(configurations.Config()).ToStr()
 		kpi := clientv2.NewKeysAPI(cli)
 
 		_, err = kpi.Set(context.TODO(), k, v, &clientv2.SetOptions{})
@@ -151,9 +154,6 @@ func main() {
 	}
 
 	go sigHandler()
-	go bridgeProcessor()
-	time.Sleep(1 * time.Second)
-	go dnsMasq()
 	go etcd()
 
 	klog.Info("Starting ETCD")
@@ -161,6 +161,11 @@ func main() {
 	initNetwork()
 
 	go startFlannel()
+
+	go bridgeProcessor()
+	time.Sleep(1 * time.Second)
+	go dnsMasq()
+
 	klog.Info("Starting Flannel")
 	if *profiling {
 		go profiler()
