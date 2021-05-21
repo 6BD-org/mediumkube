@@ -17,6 +17,10 @@ var (
 	route *netlink.Route
 )
 
+const (
+	ipv4 int = netlink.FAMILY_V4
+)
+
 func StartFlannel() *os.Process {
 	etcdPort := configurations.Config().Overlay.EtcdPort
 	master := configurations.Config().Overlay.Master
@@ -37,6 +41,8 @@ func ProcessRoute(bridge common.Bridge, flannel common.Flannel) {
 
 }
 
+// add route
+// any traffic to given cidr is routed to given interface
 func addRouteToIface(cidrStr string, ifaceName string) {
 	flnk, err := netlink.LinkByName(ifaceName)
 	if err != nil {
