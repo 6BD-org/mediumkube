@@ -5,10 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	flannel "mediumkube/common/flannel"
-	"mediumkube/configurations"
-	"mediumkube/daemon/tasks"
-	"mediumkube/utils"
+	flannel "mediumkube/pkg/common/flannel"
+	"mediumkube/pkg/configurations"
+	"mediumkube/pkg/daemon/tasks"
+	"mediumkube/pkg/utils"
 	"strings"
 
 	"net/http"
@@ -64,8 +64,6 @@ func main() {
 			klog.Info("Sig recvd: ", sig)
 			stopDaemon()
 			tasks.CleanUpIptables()
-			tasks.CleanUpRoute()
-
 		}
 	}
 
@@ -77,11 +75,9 @@ func main() {
 			if on {
 				time.Sleep(1 * time.Second)
 				bridge := configurations.Config().Bridge
-				flannel := configurations.Config().Overlay.Flannel
 				tasks.ProcessExistence(bridge)
 				tasks.ProcessAddr(bridge)
 				tasks.ProcessIptables(bridge)
-				tasks.ProcessRoute(bridge, flannel)
 			}
 			dmux.Unlock()
 		}
@@ -97,28 +93,6 @@ func main() {
 			time.Sleep(1 * time.Second)
 		}
 		proc.Kill()
-	}
-
-	startFlannel := func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		proc := tasks.StartFlannel()
-		for on {
-			time.Sleep(1 * time.Second)
-		}
-		proc.Kill()
-	}
-
-	etcd := func() {
-		wg.Add(1)
-		defer wg.Done()
-		proc := tasks.StartEtcd()
-		for on {
-			time.Sleep(1 * time.Second)
-		}
-		proc.Kill()
-
 	}
 
 	initNetwork := func() {
@@ -154,13 +128,10 @@ func main() {
 	}
 
 	go sigHandler()
-	go etcd()
 
 	klog.Info("Starting ETCD")
 	time.Sleep(2 * time.Second)
 	initNetwork()
-
-	go startFlannel()
 
 	go bridgeProcessor()
 	time.Sleep(1 * time.Second)

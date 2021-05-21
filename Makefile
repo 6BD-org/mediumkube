@@ -8,7 +8,7 @@ mediumkube:
 	go build -o mediumkube main.go
 
 mediumkubed:
-	go build -o mediumkubed daemon/main.go
+	go build -o mediumkubed pkg/daemon/main.go
 
 all: mediumkube mediumkubed
 

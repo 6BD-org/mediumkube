@@ -1,9 +1,9 @@
 package tasks
 
 import (
-	"mediumkube/common"
-	"mediumkube/network"
-	"mediumkube/utils"
+	"mediumkube/pkg/common"
+	"mediumkube/pkg/network"
+	"mediumkube/pkg/utils"
 )
 
 // IPMode how rules are inserted into iptables
