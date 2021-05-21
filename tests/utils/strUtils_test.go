@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"mediumkube/utils"
+	"mediumkube/pkg/utils"
 	"reflect"
 	"testing"
 )

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"mediumkube/utils"
+	"mediumkube/pkg/utils"
 	"os"
 	"path/filepath"
 	"testing"

@@ -1,6 +1,6 @@
 | Parameter | Comment | Example |
 |---|---|---|
-|backend|virtualization backend| multipass |
+|backend|virtualization backend| libvirt |
 |http-proxy|proxy address. Accessible via {{ .HTTPProxy }}| http://127.0.0.1:8888 |
 |https-proxy|proxy address. Accessible via {{ .HTTPSProxy }}| http://127.0.0.1:8888 |
 |pub-key-dir|public key for vm|./a.pub|

@@ -4,9 +4,9 @@ backend: "libvirt"
 bridge:
   name: "mediumkube-br0"
   inet: 10.114.114.1/24
-  host: "enp0s31f6"
 
 overlay:
+  enabled: true # If overlay is disabled, there would be no etcd or flannel service
   master: 172.16.223.54 # master node ip. Must be accessable from all other nodes
   etcd-port: 6872 # simplified config. Avoid loops
   flannel:
