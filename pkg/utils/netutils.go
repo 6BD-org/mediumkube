@@ -20,3 +20,7 @@ func GenerateMac() net.HardwareAddr {
 
 	return mac
 }
+
+func IpNetEqual(net1 *net.IPNet, net2 *net.IPNet) bool {
+	return net1.String() == net2.String()
+}
