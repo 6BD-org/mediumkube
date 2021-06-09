@@ -2,6 +2,7 @@ package network
 
 import (
 	"bufio"
+	"mediumkube/pkg/common"
 	"mediumkube/pkg/utils"
 	"os"
 	"strings"
@@ -31,5 +32,9 @@ func Resolve(leaseFilePath string, host string) (string, bool) {
 		}
 	}
 
+	return "0.0.0.0", false
+}
+
+func ResolveOverlay(overlayConfig common.Overlay, host string) (string, bool) {
 	return "0.0.0.0", false
 }

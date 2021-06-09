@@ -15,6 +15,10 @@ import (
 	"k8s.io/klog/v2"
 )
 
+const (
+	etcdExecutable = "etcd"
+)
+
 // start etcd service
 func StartEtcd() *os.Process {
 	etcdPort := configurations.Config().Overlay.EtcdPort

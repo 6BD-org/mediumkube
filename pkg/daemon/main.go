@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"mediumkube/pkg/configurations"
+	"mediumkube/pkg/daemon/mesh"
 	"mediumkube/pkg/daemon/tasks"
 
 	"net/http"
@@ -96,6 +97,19 @@ func main() {
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *profilingPort), nil))
 	}
 
+	mesh := func() {
+		for on {
+			if configurations.Config().Overlay.Enabled {
+				mesh.StartMesh()
+			}
+			time.Sleep(5 * time.Second)
+		}
+		if configurations.Config().Overlay.Enabled {
+			mesh.StopMesh()
+		}
+
+	}
+
 	go sigHandler()
 
 	klog.Info("Starting ETCD")
@@ -109,6 +123,8 @@ func main() {
 	if *profiling {
 		go profiler()
 	}
+
+	go mesh()
 
 	wg.Wait()
 	klog.Info("Daemon exited")

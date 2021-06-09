@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"mediumkube/pkg/configurations"
 	"mediumkube/pkg/mediumssh"
-	"mediumkube/pkg/network"
+	"mediumkube/pkg/services"
 
 	"k8s.io/klog/v2"
 )
@@ -26,7 +26,7 @@ func (plugin PostInitPlugin) Exec(args ...string) {
 		klog.Error("Invalid Argument")
 		return
 	}
-	host, ok := network.Resolve(configurations.Config().LeaseFile(), args[0])
+	host, ok := services.GetDNSService(configurations.Config()).Resolve(args[0])
 	if !ok {
 		klog.Error("Unknown host: ", args[0])
 	}

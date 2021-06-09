@@ -1,8 +1,11 @@
 package services
 
+import "mediumkube/pkg/common"
+
 var multipassService MultipassService
 var k8sService KubernetesService
 var libvirtService LibvirtService
+var dnsService *DNSService
 
 func InitMultipassService(ms MultipassService) {
 	multipassService = ms
@@ -37,4 +40,11 @@ func GetNodeManager(backend string) NodeManager {
 	default:
 		panic("Unsupported type")
 	}
+}
+
+func GetDNSService(config *common.OverallConfig) *DNSService {
+	if dnsService == nil {
+		dnsService = NewDNSService(config)
+	}
+	return dnsService
 }

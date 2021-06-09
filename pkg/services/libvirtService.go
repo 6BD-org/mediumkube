@@ -7,7 +7,6 @@ import (
 	"mediumkube/pkg/common"
 	"mediumkube/pkg/configurations"
 	"mediumkube/pkg/mediumssh"
-	"mediumkube/pkg/network"
 	"mediumkube/pkg/utils"
 	"mediumkube/pkg/utils/virtutils"
 	"os"
@@ -53,7 +52,7 @@ func formatSSHAddr(addr string) string {
 }
 
 func (service LibvirtService) connectToNode(node string) (*mediumssh.SSHClient, error) {
-	addr, ok := network.Resolve(service.config.LeaseFile(), node)
+	addr, ok := GetDNSService(service.config).Resolve(node)
 	if !ok {
 		klog.Error("Unable to resolve node: ", node)
 		return nil, fmt.Errorf("Unable to resolve node: %v", node)
@@ -433,7 +432,7 @@ func (service LibvirtService) List() {
 		} else {
 			stateStr = stateMap[domainState]
 		}
-		addr, ok := network.Resolve(service.config.LeaseFile(), name)
+		addr, ok := GetDNSService(service.config).Resolve(name)
 		if !ok {
 			addr = "UNAVAILABLE"
 		}
