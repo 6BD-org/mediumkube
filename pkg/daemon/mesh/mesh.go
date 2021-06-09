@@ -46,15 +46,24 @@ func StartMesh() {
 		meshProcesses[flannelProc] = true
 		configFlannel()
 	}
+
+	if !etcdOk {
+		// ETCD restarted, init dns dir
+		initDnsDir()
+	}
+
+	StartDNSSync()
 }
 
 func StopMesh() {
+	StopDNSSync()
 	for k, _ := range meshProcesses {
 		err := k.Kill()
 		if err != nil {
 			klog.Error(err)
 		}
 	}
+
 }
 
 func init() {

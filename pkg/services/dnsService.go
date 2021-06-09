@@ -24,7 +24,7 @@ func (dns *DNSService) Resolve(hostname string) (string, bool) {
 		return network.Resolve(dns.config.LeaseFile(), hostname)
 	} else {
 		// ETCD not supported yet
-		return network.Resolve(dns.config.LeaseFile(), hostname)
-		//return network.ResolveOverlay(dns.config.Overlay, hostname)
+		// return network.Resolve(dns.config.LeaseFile(), hostname)
+		return network.ResolveOverlay(dns.config.Overlay, hostname)
 	}
 }

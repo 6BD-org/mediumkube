@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	etcd "mediumkube/pkg/etcd"
+
 	clientv2 "go.etcd.io/etcd/client/v2"
 	"k8s.io/klog/v2"
 )
@@ -36,27 +38,26 @@ func StartEtcd() *os.Process {
 	return cmd.Process
 }
 
+func initDnsDir() {
+	klog.Info("Initialization etcd directory for dns")
+	overlayConfig := configurations.Config().Overlay
+	cli := etcd.NewClientOrDie()
+	kpi := clientv2.NewKeysAPI(cli)
+	kpi.Set(context.TODO(), overlayConfig.DNSEtcdPrefix, "", &clientv2.SetOptions{Dir: true})
+}
+
 // configFlannel render flannel configuration fron overall configurations
 // and push to etcd
 func configFlannel() {
 	klog.Info("Initializing configurations for flannel")
 	overlayConfig := configurations.Config().Overlay
-	cli, err := clientv2.New(
-		clientv2.Config{
-			Endpoints: []string{
-				utils.EtcdEp(overlayConfig.Master, overlayConfig.EtcdPort),
-			},
-		},
-	)
-	if err != nil {
-		klog.Error("Failed to init network configurations to etcd")
-	}
+	cli := etcd.NewClientOrDie()
 
 	k := strings.Join([]string{overlayConfig.Flannel.EtcdPrefix, "config"}, "/")
 	v := flannel.NewConfig(configurations.Config()).ToStr()
 	kpi := clientv2.NewKeysAPI(cli)
 
-	_, err = kpi.Set(context.TODO(), k, v, &clientv2.SetOptions{})
+	_, err := kpi.Set(context.TODO(), k, v, &clientv2.SetOptions{})
 	klog.Info(k, v)
 	if err != nil {
 		klog.Error(err)

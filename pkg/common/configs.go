@@ -8,6 +8,7 @@ type Overlay struct {
 	Flannel       Flannel `yaml:"flannel"`
 	Enabled       bool    `yaml:"enabled"`
 	DNSEtcdPrefix string  `yaml:"dns-etcd-prefix"`
+	Cidr          string  `yaml:"cidr"`
 }
 
 type Flannel struct {

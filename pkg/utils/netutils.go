@@ -24,3 +24,10 @@ func GenerateMac() net.HardwareAddr {
 func IpNetEqual(net1 *net.IPNet, net2 *net.IPNet) bool {
 	return net1.String() == net2.String()
 }
+
+func CidrMatch(ipStr string, cidrStr string) bool {
+	_, ipnet, err := net.ParseCIDR(cidrStr)
+	CheckErr(err)
+	ip := net.ParseIP(ipStr)
+	return ipnet.Contains(ip)
+}
