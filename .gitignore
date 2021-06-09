@@ -3,3 +3,5 @@
 build/
 
 cloud-init.yaml
+
+default.etcd
