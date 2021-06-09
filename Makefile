@@ -5,26 +5,23 @@ test:
 	go test ./tests/...
 
 mediumkube:
-	go build -o mediumkube main.go
+	go build -o build/mediumkube main.go
 
 mediumkubed:
-	go build -o mediumkubed daemon/main.go
+	go build -o build/mediumkubed pkg/daemon/main.go
 
 all: mediumkube mediumkubed
 
 clean:
-	rm -f ./mediumkube ./mediumkubed
-
-daemon: clean mediumkubed
-	sudo ./mediumkubed
+	rm -f build/*
 
 install: mediumkube mediumkubed
 	sudo mkdir -p /etc/mediumkube /var/run/mediumkube
 	sudo mkdir -p /etc/mediumkube/flannel /var/run/mediumkube/flannel
 
 	# Copy binary and default configuration files
-	sudo cp mediumkube /usr/local/bin/mediumkube
-	sudo cp mediumkubed /usr/local/bin/mediumkubed
+	sudo cp build/mediumkube /usr/local/bin/mediumkube
+	sudo cp build/mediumkubed /usr/local/bin/mediumkubed
 	sudo cp config.yaml /etc/mediumkube/config.yaml
 	
 	# Register systemd service
@@ -36,5 +33,10 @@ install: mediumkube mediumkubed
 	# Reload and enable service
 	sudo systemctl daemon-reload
 	sudo systemctl enable mediumkube
-	
+
+stop:
+	sudo systemctl stop mediumkube
+
+start:
+	sudo systemctl start mediumkube	
 

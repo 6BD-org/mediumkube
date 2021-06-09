@@ -2,7 +2,7 @@ package k8s
 
 import (
 	"log"
-	"mediumkube/k8s"
+	"mediumkube/pkg/k8s"
 	"reflect"
 	"testing"
 )

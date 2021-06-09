@@ -4,15 +4,17 @@ backend: "libvirt"
 bridge:
   name: "mediumkube-br0"
   inet: 10.114.114.1/24
-  host: "enp0s31f6"
 
 overlay:
+  enabled: true # If overlay is disabled, there would be no etcd or flannel service
   master: 172.16.223.54 # master node ip. Must be accessable from all other nodes
   etcd-port: 6872 # simplified config. Avoid loops
+  cidr: 10.114.114.0/24
+  dns-etcd-prefix: "/xmbsmdsj.co.uk/dns"
   flannel:
     network: 10.114.114.0/16
     etcd-prefix: "/xmbsmdsj.co.uk/network"
-    iface: "mediumkube-br0" # 
+    iface: "mediumkube-flannel0" # 
     backend: "vxlan"
 
 http-proxy: "http://10.114.114.1:1091"

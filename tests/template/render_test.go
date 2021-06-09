@@ -1,9 +1,9 @@
 package template
 
 import (
-	"mediumkube/commands"
-	"mediumkube/configurations"
-	"mediumkube/utils"
+	"mediumkube/pkg/commands"
+	"mediumkube/pkg/configurations"
+	"mediumkube/pkg/utils"
 	"os"
 	"testing"
 )

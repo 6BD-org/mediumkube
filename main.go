@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"mediumkube/commands"
-	"mediumkube/configurations"
+	"mediumkube/pkg/commands"
+	"mediumkube/pkg/configurations"
 	"os"
 )
 
