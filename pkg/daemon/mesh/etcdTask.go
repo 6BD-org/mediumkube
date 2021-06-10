@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	etcdExecutable = "etcd"
+	etcdExecutable = "mediumkube-etcd"
 )
 
 // start etcd service
@@ -26,7 +26,7 @@ func StartEtcd() *os.Process {
 	etcdPort := configurations.Config().Overlay.EtcdPort
 	master := configurations.Config().Overlay.Master
 	cmd := exec.Command(
-		"etcd",
+		etcdExecutable,
 		fmt.Sprintf("--listen-client-urls=%s", utils.EtcdEp(master, etcdPort)),
 		fmt.Sprintf("--advertise-client-urls=%s", utils.EtcdEp(master, etcdPort)),
 		"--enable-v2=true",

@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	"mediumkube/pkg/utils"
 	"os"
 
 	"github.com/mitchellh/go-ps"
@@ -20,12 +21,11 @@ func HealthCheck() (*os.Process, *os.Process) {
 	}
 	var flannelP *os.Process = nil
 	var etcdP *os.Process = nil
-
 	for _, p := range processes {
-		if p.Executable() == flannelExecutableName {
+		if utils.SameProcInThisContext(p.Executable(), flannelExecutableName) {
 			flannelP, err = os.FindProcess(p.Pid())
 		}
-		if p.Executable() == etcdExecutable {
+		if utils.SameProcInThisContext(p.Executable(), etcdExecutable) {
 			etcdP, err = os.FindProcess(p.Pid())
 		}
 	}
@@ -39,6 +39,8 @@ func StartMesh() {
 	flannelP, etcdP := HealthCheck()
 
 	if etcdP == nil {
+		klog.Info("Etcd process not detected, creating one")
+
 		etcdProc := StartEtcd()
 		meshProcesses[etcdProc] = true
 	} else {
@@ -46,6 +48,7 @@ func StartMesh() {
 	}
 
 	if flannelP == nil {
+		klog.Info("Flannel process not detected, creating one")
 		flannelProc := StartFlannel()
 		meshProcesses[flannelProc] = true
 		configFlannel()
