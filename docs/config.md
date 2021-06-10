@@ -20,7 +20,8 @@
 |overlay.enabled|use overlay network for domains. If this is  enabled, mediumkube will use etcd for DNS|true|
 |overlay.master|IP address of master node. Mediumkube uses master-slave topology, master node has essential services running on it|192.168.1.2|
 |overlay.etcd-port|Port of etcd on master|6872|
-overlay.dns-etcd-prefix|prefix of dns in etcd|"/xmbsmdsj.co.uk/dns"|
+|overlay.dns-etcd-prefix|prefix of dns in etcd|"/xmbsmdsj.co.uk/dns"|
+|overlay.lease-etcd-prefix|prefix of lease sync in etcd|"xmbsmdsj.co.uk/lease"|
 |overlay.flannel.network|flannel cidr|10.114.114.0/16|
 |overlay.flannel.etcd-prefix|ETCD key prefix allocated for flannel |"/xmbsmdsj.co.uk/network"|
 |overlay.flannel.iface|Interface for flannel|flannel.1|
