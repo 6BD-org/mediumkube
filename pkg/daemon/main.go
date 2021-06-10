@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"mediumkube/pkg/common"
 	"mediumkube/pkg/configurations"
 	"mediumkube/pkg/daemon/mesh"
 	"mediumkube/pkg/daemon/tasks"
@@ -25,14 +26,15 @@ type DMux struct {
 }
 
 var (
-	on   bool = true
-	dmux DMux = DMux{}
+	on    bool = true
+	dmux  DMux = DMux{}
+	close      = make(chan bool)
+
+	dnsMasqProc *os.Process = nil
 )
 
 func stopDaemon() {
-	dmux.Lock()
-	on = false
-	dmux.Unlock()
+	close <- true
 }
 
 func main() {
@@ -59,36 +61,21 @@ func main() {
 		case sig := <-c:
 			klog.Info("Sig recvd: ", sig)
 			stopDaemon()
-			tasks.CleanUpIptables()
+
 		}
 	}
 
-	bridgeProcessor := func() {
-		wg.Add(1)
-		defer wg.Done()
-		for on {
-			dmux.Lock()
-			if on {
-				time.Sleep(1 * time.Second)
-				bridge := configurations.Config().Bridge
-				tasks.ProcessExistence(bridge)
-				tasks.ProcessAddr(bridge)
-				tasks.ProcessIptables(bridge)
-			}
-			dmux.Unlock()
-		}
+	processBridge := func(config *common.OverallConfig) {
+		bridge := configurations.Config().Bridge
+		tasks.ProcessExistence(bridge)
+		tasks.ProcessAddr(bridge)
+		tasks.ProcessIptables(bridge)
 	}
 
-	dnsMasq := func() {
-		wg.Add(1)
-		defer wg.Done()
-		config := configurations.Config()
-		proc := tasks.StartDnsmasq(config.Bridge, *config)
-
-		for on {
-			time.Sleep(1 * time.Second)
+	dnsMasq := func(config *common.OverallConfig) {
+		if dnsMasqProc == nil {
+			dnsMasqProc = tasks.StartDnsmasq(config.Bridge, *config)
 		}
-		proc.Kill()
 	}
 
 	profiler := func() {
@@ -97,37 +84,35 @@ func main() {
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *profilingPort), nil))
 	}
 
-	mesh := func() {
-		wg.Add(1)
-		defer wg.Done()
-		for on {
-			if configurations.Config().Overlay.Enabled {
-				mesh.StartMesh()
-			}
-			time.Sleep(5 * time.Second)
+	processMesh := func(config *common.OverallConfig) {
+		if config.Overlay.Enabled {
+			mesh.StartMesh()
 		}
-		if configurations.Config().Overlay.Enabled {
-			mesh.StopMesh()
-		}
-
 	}
 
+	config := configurations.Config()
 	go sigHandler()
-
-	klog.Info("Starting ETCD")
-	time.Sleep(2 * time.Second)
-
-	go bridgeProcessor()
-	time.Sleep(1 * time.Second)
-	go dnsMasq()
-
-	klog.Info("Starting Flannel")
 	if *profiling {
 		go profiler()
 	}
 
-	go mesh()
+	for {
+		c := false
+		select {
+		case <-time.After(3 * time.Second):
+			processBridge(config)
+			dnsMasq(config)
+			processMesh(config)
+		case c = <-close:
+			mesh.StopMesh()
+			dnsMasqProc.Kill()
+			tasks.CleanUpIptables()
+			break
+		}
+		if c {
+			break
+		}
+	}
 
-	wg.Wait()
 	klog.Info("Daemon exited")
 }

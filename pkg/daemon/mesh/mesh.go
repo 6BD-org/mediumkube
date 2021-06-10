@@ -55,11 +55,10 @@ func StartMesh() {
 
 	initDnsDir()
 
-	StartDNSSync()
+	CommerceSync()
 }
 
 func StopMesh() {
-	StopDNSSync()
 	for k, _ := range meshProcesses {
 		klog.Infof("Killing: %v", k.Pid)
 		err := k.Kill()
