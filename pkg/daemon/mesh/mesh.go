@@ -13,44 +13,47 @@ var (
 
 // HealthCheck checks Mesh daemon health
 // returns flannelOk, etcdOk
-func HealthCheck() (bool, bool) {
+func HealthCheck() (*os.Process, *os.Process) {
 	processes, err := ps.Processes()
 	if err != nil {
 		klog.Error("Error occurred in mesh health check")
 	}
-	flannelOk := false
-	etcdOk := false
+	var flannelP *os.Process = nil
+	var etcdP *os.Process = nil
 
 	for _, p := range processes {
 		if p.Executable() == flannelExecutableName {
-			flannelOk = true
+			flannelP, err = os.FindProcess(p.Pid())
 		}
 		if p.Executable() == etcdExecutable {
-			etcdOk = true
+			etcdP, err = os.FindProcess(p.Pid())
 		}
 	}
-	return flannelOk, etcdOk
+	return flannelP, etcdP
 
 }
 
+// StartMesh is invoked repeatdly, so makesure everything inside this method
+// is idempotent
 func StartMesh() {
-	flannelOk, etcdOk := HealthCheck()
+	flannelP, etcdP := HealthCheck()
 
-	if !etcdOk {
+	if etcdP == nil {
 		etcdProc := StartEtcd()
 		meshProcesses[etcdProc] = true
+	} else {
+		meshProcesses[etcdP] = true
 	}
 
-	if !flannelOk {
+	if flannelP == nil {
 		flannelProc := StartFlannel()
 		meshProcesses[flannelProc] = true
 		configFlannel()
+	} else {
+		meshProcesses[flannelP] = true
 	}
 
-	if !etcdOk {
-		// ETCD restarted, init dns dir
-		initDnsDir()
-	}
+	initDnsDir()
 
 	StartDNSSync()
 }
@@ -58,6 +61,7 @@ func StartMesh() {
 func StopMesh() {
 	StopDNSSync()
 	for k, _ := range meshProcesses {
+		klog.Infof("Killing: %v", k.Pid)
 		err := k.Kill()
 		if err != nil {
 			klog.Error(err)

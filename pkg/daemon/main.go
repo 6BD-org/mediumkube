@@ -98,6 +98,8 @@ func main() {
 	}
 
 	mesh := func() {
+		wg.Add(1)
+		defer wg.Done()
 		for on {
 			if configurations.Config().Overlay.Enabled {
 				mesh.StartMesh()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"mediumkube/pkg/common"
+	"mediumkube/pkg/network"
 	"mediumkube/pkg/utils"
 	"os"
 	"os/exec"
@@ -53,9 +54,21 @@ func preapare() {
 	}
 }
 
+func dhcpRange(config common.OverallConfig) string {
+	if !config.Overlay.Enabled {
+		from, to, err := network.CidrIPRange(config.Bridge.Inet)
+		utils.CheckErr(err)
+		return fmt.Sprintf("%s,%s", from, to)
+	}
+
+	from, to, err := network.CidrIPRange(config.Overlay.Cidr)
+	utils.CheckErr(err)
+	return fmt.Sprintf("%s,%s", from, to)
+
+}
+
 // StartDnsmasq for DNS and NAT
 func StartDnsmasq(bridge common.Bridge, config common.OverallConfig) *os.Process {
-	subnet := bridgeSubNet(bridge)
 	timeout := 100
 	counter := 0
 	for {
@@ -93,7 +106,7 @@ func StartDnsmasq(bridge common.Bridge, config common.OverallConfig) *os.Process
 		"--dhcp-authoritative",
 		// NEVER change lease file.
 		fmt.Sprintf("--dhcp-leasefile=%v", leaseFile),
-		fmt.Sprintf("--dhcp-range=%v", fmt.Sprintf("%v.2,%v.254,infinite", subnet, subnet)),
+		fmt.Sprintf("--dhcp-range=%v", dhcpRange(config)),
 	)
 	preapare()
 	klog.Info("Starting dnsmasq with: ", cmd)
