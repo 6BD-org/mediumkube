@@ -33,6 +33,8 @@ func HealthCheck() (bool, bool) {
 
 }
 
+// StartMesh is invoked repeatdly, so makesure everything inside this method
+// is idempotent
 func StartMesh() {
 	flannelOk, etcdOk := HealthCheck()
 
