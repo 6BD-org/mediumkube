@@ -39,11 +39,17 @@ func StartEtcd() *os.Process {
 }
 
 func initDnsDir() {
-	klog.Info("Initialization etcd directory for dns")
 	overlayConfig := configurations.Config().Overlay
 	cli := etcd.NewClientOrDie()
 	kpi := clientv2.NewKeysAPI(cli)
-	kpi.Set(context.TODO(), overlayConfig.DNSEtcdPrefix, "", &clientv2.SetOptions{Dir: true})
+	_, err := kpi.Set(context.TODO(), overlayConfig.DNSEtcdPrefix, "", &clientv2.SetOptions{Dir: true, PrevExist: clientv2.PrevNoExist})
+	if err != nil && !strings.Contains(err.Error(), "already exists") {
+		klog.Errorf("Error init dir: %s, err: %v", overlayConfig.DNSEtcdPrefix, err)
+	}
+	_, err = kpi.Set(context.TODO(), overlayConfig.LeaseEtcdPrefix, "", &clientv2.SetOptions{Dir: true, PrevExist: clientv2.PrevNoExist})
+	if err != nil && !strings.Contains(err.Error(), "already exists") {
+		klog.Errorf("Error init dir: %s, err: %v", overlayConfig.LeaseEtcdPrefix, err)
+	}
 }
 
 // configFlannel render flannel configuration fron overall configurations

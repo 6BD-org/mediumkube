@@ -69,7 +69,6 @@ func dhcpRange(config common.OverallConfig) string {
 
 // StartDnsmasq for DNS and NAT
 func StartDnsmasq(bridge common.Bridge, config common.OverallConfig) *os.Process {
-	subnet := bridgeSubNet(bridge)
 	timeout := 100
 	counter := 0
 	for {

@@ -1,9 +1,7 @@
 package mesh
 
 type PeerLease struct {
-	Master    bool   `yaml:"master"`
-	Cidr      string `yaml:"cidr"`
-	PublicIP  string `yaml:"publicIP"`
-	Timestamp int64  `yaml:"timestamp"`
-	TTL       int64  `yaml:"ttl"`
+	Cidr      string `json:"cidr"`      // Cidr of the node
+	Timestamp int64  `json:"timestamp"` // Current unix timestamp
+	TTL       int64  `json:"ttl"`       // Time to live
 }

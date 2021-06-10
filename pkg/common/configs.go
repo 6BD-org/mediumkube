@@ -3,12 +3,13 @@ package common
 import "path"
 
 type Overlay struct {
-	Master        string  `yaml:"master"`
-	EtcdPort      int     `yaml:"etcd-port"`
-	Flannel       Flannel `yaml:"flannel"`
-	Enabled       bool    `yaml:"enabled"`
-	DNSEtcdPrefix string  `yaml:"dns-etcd-prefix"`
-	Cidr          string  `yaml:"cidr"`
+	Master          string  `yaml:"master"`
+	EtcdPort        int     `yaml:"etcd-port"`
+	Flannel         Flannel `yaml:"flannel"`
+	Enabled         bool    `yaml:"enabled"`
+	DNSEtcdPrefix   string  `yaml:"dns-etcd-prefix"`
+	LeaseEtcdPrefix string  `yaml:"lease-etcd-prefix"`
+	Cidr            string  `yaml:"cidr"`
 }
 
 type Flannel struct {

@@ -40,6 +40,32 @@ ERROR:
 
 }
 
+func DeleteRoute(cidrStr string, ifaceName string) {
+	var err error
+
+ERROR:
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+
+	route, err := constructRoute(cidrStr, ifaceName, false)
+	flnk, err := netlink.LinkByName(ifaceName)
+	if err != nil {
+		goto ERROR
+	}
+	routes, err := netlink.RouteList(flnk, ipv4)
+	if err != nil {
+		goto ERROR
+	}
+
+	for _, r := range routes {
+		if r.Dst == route.Dst && r.LinkIndex == route.LinkIndex {
+			netlink.RouteDel(&r)
+		}
+	}
+}
+
 // RouteToIface create a route to interface if not exists.
 func RouteToIface(cidrStr string, ifaceName string, self bool) (*netlink.Route, error) {
 	var err error
@@ -69,7 +95,7 @@ ERROR:
 
 	exists := false
 	for _, r := range routes {
-		if r.Dst == route.Dst && r.LinkIndex == route.LinkIndex {
+		if r.Dst.IP.Equal(route.Dst.IP) && r.LinkIndex == route.LinkIndex {
 			exists = true
 		}
 	}
@@ -93,7 +119,7 @@ func checkIfaceAddress(link netlink.Link) error {
 		return err
 	}
 	if len(addrs) == 0 {
-		return fmt.Errorf("Unable to fetch IP for flannel")
+		return fmt.Errorf("Unable to fetch IP for %v", link.Attrs().Name)
 	}
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ipv4 int = 1
+	ipv4 int = netlink.FAMILY_V4
 )
 
 // CreateNetBridge from config

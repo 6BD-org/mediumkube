@@ -5,6 +5,10 @@ import (
 	"mediumkube/pkg/common"
 )
 
+const (
+	FlannelIface = "flannel.1"
+)
+
 // FlannelConfig in etcd
 type FlannelConfig struct {
 	Network string  `json:"Network"`
