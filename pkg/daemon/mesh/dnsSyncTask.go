@@ -9,7 +9,6 @@ import (
 	etcd "mediumkube/pkg/etcd"
 	"mediumkube/pkg/network"
 	"strings"
-	"sync"
 	"time"
 
 	clientv2 "go.etcd.io/etcd/client/v2"
@@ -22,8 +21,6 @@ const (
 
 var (
 	etcdClient clientv2.Client
-	on         bool
-	mux        sync.Mutex
 )
 
 func doSync() {
@@ -54,13 +51,6 @@ func doSync() {
 	for _, pairOut := range out {
 		// DELETE etcd
 		kpi.Delete(context.TODO(), pairOut.Host, nil)
-	}
-}
-
-func dnsSyncD() {
-	for on {
-		doSync()
-		time.Sleep(3 * time.Second)
 	}
 }
 
@@ -102,7 +92,8 @@ func pullLease(config *common.OverallConfig) ([]PeerLease, error) {
 		}
 		err = json.Unmarshal([]byte(node.Value), &payload)
 		if err != nil {
-			klog.Error(err)
+
+			klog.Errorf("Fail to marshal payload: %v, err: %v", node.Value, err)
 			continue
 		}
 		res = append(res, payload)
@@ -131,34 +122,12 @@ func doLeaseSync(config *common.OverallConfig) {
 	}
 }
 
-func leaseSyncD() {
+func CommerceSync() {
 	config := configurations.Config()
-	for on {
-		doLeaseSync(config)
-		time.Sleep(3 * time.Second)
-	}
-}
-
-func StartDNSSync() {
-	mux.Lock()
-	defer mux.Unlock()
-	on = true
 	if etcdClient == nil {
 		etcdClient = etcd.NewClientOrDie()
 	}
 
-	go dnsSyncD()
-	go leaseSyncD()
-}
-
-func StopDNSSync() {
-	klog.Info("Stopping dns sync")
-	mux.Lock()
-	defer mux.Unlock()
-	on = false
-}
-
-func init() {
-	on = false
-	mux = sync.Mutex{}
+	go doLeaseSync(config)
+	go doSync()
 }
