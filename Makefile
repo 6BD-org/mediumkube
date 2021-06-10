@@ -19,6 +19,8 @@ install: mediumkube mediumkubed
 	sudo mkdir -p /etc/mediumkube /var/run/mediumkube
 	sudo mkdir -p /etc/mediumkube/flannel /var/run/mediumkube/flannel
 
+	sudo cp context/* /usr/local/bin
+
 	# Copy binary and default configuration files
 	sudo cp build/mediumkube /usr/local/bin/mediumkube
 	sudo cp build/mediumkubed /usr/local/bin/mediumkubed

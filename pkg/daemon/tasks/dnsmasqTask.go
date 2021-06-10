@@ -17,6 +17,10 @@ import (
 	"k8s.io/klog/v2"
 )
 
+const (
+	dnsMasqExecutable = "mediumkube-dnsmasq"
+)
+
 func bridgeSubNet(bridge common.Bridge) string {
 	ip := strings.Split(bridge.Inet, "/")[0]
 	builder := strings.Builder{}
@@ -35,7 +39,7 @@ func preapare() {
 	utils.CheckErr(err)
 
 	for _, p := range processes {
-		if p.Executable() == "dnsmasq" {
+		if utils.SameProcInThisContext(p.Executable(), dnsMasqExecutable) {
 			cmdLine := utils.GetLinuxProcCmdOrEmpty(p.Pid())
 			if strings.Contains(cmdLine, "--domain=mediumkube") {
 				klog.Info("Killing: ", cmdLine, "PID", p.Pid())
@@ -92,7 +96,7 @@ func StartDnsmasq(bridge common.Bridge, config common.OverallConfig) *os.Process
 	leaseFile := path.Join(config.TmpDir, "dnsmasq.lease")
 
 	cmd := exec.Command(
-		"dnsmasq",
+		dnsMasqExecutable,
 		"--keep-in-foreground",
 		"--strict-order",
 		"--bind-interfaces",
