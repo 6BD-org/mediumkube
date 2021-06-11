@@ -1,0 +1,26 @@
+service DomainSercice {
+    rpc ListDomains(EmptyParam) returns (DomainListResp);
+    rpc DeployDomain(DomainCreationParam) returns (DomainCreationResp);
+}
+
+message DomainListResp {
+    repeated DomainResp domains = 1;
+}
+
+message DomainResp {
+    required string name = 1;
+    required string status = 2;
+    required string ip = 3;
+    required string reason = 4;
+}
+
+message DomainCreationParam {
+
+}
+
+message DomainCreationResp {
+
+}
+
+
+message EmptyParam {}
