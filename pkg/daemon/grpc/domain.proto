@@ -1,3 +1,8 @@
+syntax = "proto3";
+
+option go_package = "xmbsmdsj.com/mediumkube/pkg/daemon/gprc";
+
+
 service DomainSercice {
     rpc ListDomains(EmptyParam) returns (DomainListResp);
     rpc DeployDomain(DomainCreationParam) returns (DomainCreationResp);
@@ -8,10 +13,10 @@ message DomainListResp {
 }
 
 message DomainResp {
-    required string name = 1;
-    required string status = 2;
-    required string ip = 3;
-    required string reason = 4;
+     string name = 1;
+     string status = 2;
+     string ip = 3;
+     string reason = 4;
 }
 
 message DomainCreationParam {
