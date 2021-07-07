@@ -1,4 +1,4 @@
-package common
+package models
 
 type NSPair struct {
 	Host    string `json:"host"`

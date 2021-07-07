@@ -7,7 +7,9 @@ import (
 	"mediumkube/pkg/common"
 	"mediumkube/pkg/configurations"
 	"mediumkube/pkg/daemon/mesh"
+	"mediumkube/pkg/daemon/mgrpc"
 	"mediumkube/pkg/daemon/tasks"
+	"net"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -17,6 +19,7 @@ import (
 	"syscall"
 	"time"
 
+	"google.golang.org/grpc"
 	"k8s.io/klog/v2"
 )
 
@@ -61,7 +64,6 @@ func main() {
 		case sig := <-c:
 			klog.Info("Sig recvd: ", sig)
 			stopDaemon()
-
 		}
 	}
 
@@ -69,7 +71,7 @@ func main() {
 		bridge := configurations.Config().Bridge
 		tasks.ProcessExistence(bridge)
 		tasks.ProcessAddr(bridge)
-		tasks.ProcessIptables(bridge)
+		tasks.ProcessIptables(config)
 	}
 
 	dnsMasq := func(config *common.OverallConfig) {
@@ -94,6 +96,21 @@ func main() {
 	go sigHandler()
 	if *profiling {
 		go profiler()
+	}
+
+	svr := grpc.NewServer()
+	klog.Info("Registering Mediumkube server")
+	mgrpc.RegisterDomainSerciceServer(svr, mgrpc.NewServer(config))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", config.Overlay.GRPCPort))
+	if err != nil {
+		klog.Error("Failed to start grpc server", err)
+		stopDaemon()
+	}
+
+	go svr.Serve(lis)
+	if err != nil {
+		klog.Error("Failed to start grpc server", err)
+		stopDaemon()
 	}
 
 	for {

@@ -7,7 +7,9 @@ import (
 	"mediumkube/pkg/common/flannel"
 	"mediumkube/pkg/configurations"
 	etcd "mediumkube/pkg/etcd"
+	"mediumkube/pkg/models"
 	"mediumkube/pkg/network"
+	"mediumkube/pkg/services"
 	"strings"
 	"time"
 
@@ -56,7 +58,7 @@ func doSync() {
 
 // pushLease push self to etcd lease server
 func pushLease(config *common.OverallConfig) {
-	peer := PeerLease{
+	peer := models.PeerLease{
 		Cidr:      config.Overlay.Cidr,
 		Timestamp: time.Now().Unix(),
 		TTL:       leaseTTL,
@@ -76,17 +78,17 @@ func pushLease(config *common.OverallConfig) {
 	}
 }
 
-func pullLease(config *common.OverallConfig) ([]PeerLease, error) {
-	res := make([]PeerLease, 0)
+func pullLease(config *common.OverallConfig) ([]models.PeerLease, error) {
+	res := make([]models.PeerLease, 0)
 	kpi := clientv2.NewKeysAPI(etcdClient)
 	resp, err := kpi.Get(context.TODO(), config.Overlay.LeaseEtcdPrefix, nil)
 	if err != nil {
 		klog.Error(err)
-		return []PeerLease{}, err
+		return []models.PeerLease{}, err
 	}
 
 	for _, node := range resp.Node.Nodes {
-		payload := PeerLease{}
+		payload := models.PeerLease{}
 		if len(node.Value) == 0 {
 			continue
 		}
@@ -122,12 +124,33 @@ func doLeaseSync(config *common.OverallConfig) {
 	}
 }
 
+func doDomainSync(config *common.OverallConfig) {
+	key := config.Overlay.DomainEtcdPrefix + "/" + strings.Replace(config.Overlay.Cidr, "/", "-", -1)
+	nodeManager := services.GetNodeManager(config.Backend)
+	domains, err := nodeManager.List()
+	if err != nil {
+		klog.Error("Failed to list local domains", err)
+		return
+	}
+
+	payload, err := json.Marshal(domains)
+	klog.Info("Syncing domains: ", payload)
+	if err != nil {
+		klog.Error("Failed to marshal local domains", err)
+	}
+	kpi := clientv2.NewKeysAPI(etcdClient)
+	_, err = kpi.Set(context.TODO(), key, string(payload), nil)
+	if err != nil {
+		klog.Error("Failed to sync domains", err)
+	}
+}
+
 func CommerceSync() {
 	config := configurations.Config()
 	if etcdClient == nil {
 		etcdClient = etcd.NewClientOrDie()
 	}
-
 	go doLeaseSync(config)
 	go doSync()
+	go doDomainSync(config)
 }

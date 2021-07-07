@@ -9,9 +9,11 @@ overlay:
   enabled: true # If overlay is disabled, there would be no etcd or flannel service
   master: 172.16.223.54 # master node ip. Must be accessable from all other nodes
   etcd-port: 6872 # simplified config. Avoid loops
+  grpc-port: 6874 # port of mediumkube grpc service
   cidr: 10.114.114.0/24
   dns-etcd-prefix: "/xmbsmdsj.co.uk/dns"
   lease-etcd-prefix: "/xmbsmdsj.co.uk/lease"
+  domain-etcd-prefix: "/xmbsmdsj.co.uk/domain"
   flannel:
     network: 10.114.114.0/16
     etcd-prefix: "/xmbsmdsj.co.uk/network"

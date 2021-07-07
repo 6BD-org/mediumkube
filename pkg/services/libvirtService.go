@@ -7,6 +7,7 @@ import (
 	"mediumkube/pkg/common"
 	"mediumkube/pkg/configurations"
 	"mediumkube/pkg/mediumssh"
+	"mediumkube/pkg/models"
 	"mediumkube/pkg/utils"
 	"mediumkube/pkg/utils/virtutils"
 	"os"
@@ -18,7 +19,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/libvirt/libvirt-go"
-	"github.com/olekukonko/tablewriter"
 	"k8s.io/klog/v2"
 )
 
@@ -414,21 +414,20 @@ func (service LibvirtService) Shell(node string) {
 }
 
 // List domains
-func (service LibvirtService) List() {
+func (service LibvirtService) List() ([]models.Domain, error) {
 	defer service.conn.Close()
 	dms, err := service.conn.ListAllDomains(libvirt.CONNECT_LIST_DOMAINS_PERSISTENT)
 
 	utils.CheckErr(err)
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{
-		"Name", "IP", "STATE", "REASON",
-	})
+
+	res := make([]models.Domain, 0)
 	for _, d := range dms {
 		name, _ := d.GetName()
 		domainState, r, err := (&d).GetState()
 		stateStr := ""
 		if err != nil {
 			klog.Error(err)
+			return make([]models.Domain, 0), err
 		} else {
 			stateStr = stateMap[domainState]
 		}
@@ -436,11 +435,15 @@ func (service LibvirtService) List() {
 		if !ok {
 			addr = "UNAVAILABLE"
 		}
-		table.Append([]string{
-			name, addr, stateStr, fmt.Sprint(r),
+
+		res = append(res, models.Domain{
+			Name:   name,
+			IP:     addr,
+			Status: stateStr,
+			Reason: fmt.Sprint(r),
 		})
 	}
-	table.Render()
+	return res, nil
 }
 
 func init() {
