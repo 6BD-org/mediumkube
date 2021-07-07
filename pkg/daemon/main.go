@@ -64,7 +64,6 @@ func main() {
 		case sig := <-c:
 			klog.Info("Sig recvd: ", sig)
 			stopDaemon()
-
 		}
 	}
 
@@ -72,7 +71,7 @@ func main() {
 		bridge := configurations.Config().Bridge
 		tasks.ProcessExistence(bridge)
 		tasks.ProcessAddr(bridge)
-		tasks.ProcessIptables(bridge)
+		tasks.ProcessIptables(config)
 	}
 
 	dnsMasq := func(config *common.OverallConfig) {
@@ -101,14 +100,14 @@ func main() {
 
 	svr := grpc.NewServer()
 	klog.Info("Registering Mediumkube server")
-	mgrpc.RegisterDomainSerciceServer(svr, &mgrpc.MediumKubeServer{})
+	mgrpc.RegisterDomainSerciceServer(svr, mgrpc.NewServer(config))
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", config.Overlay.GRPCPort))
 	if err != nil {
 		klog.Error("Failed to start grpc server", err)
 		stopDaemon()
 	}
 
-	svr.Serve(lis)
+	go svr.Serve(lis)
 	if err != nil {
 		klog.Error("Failed to start grpc server", err)
 		stopDaemon()

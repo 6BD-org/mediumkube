@@ -1,6 +1,9 @@
 package services
 
-import "mediumkube/pkg/common"
+import (
+	"mediumkube/pkg/common"
+	"mediumkube/pkg/models"
+)
 
 // NodeManager manages nodes
 type NodeManager interface {
@@ -14,5 +17,5 @@ type NodeManager interface {
 	AttachAndExec(node string, command []string, sudo bool)
 	Shell(node string)
 	ExecScript(node string, script string, sudo bool)
-	List()
+	List() ([]models.Domain, error)
 }

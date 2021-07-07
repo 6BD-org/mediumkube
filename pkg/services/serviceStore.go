@@ -2,18 +2,9 @@ package services
 
 import "mediumkube/pkg/common"
 
-var multipassService MultipassService
 var k8sService KubernetesService
 var libvirtService LibvirtService
 var dnsService *DNSService
-
-func InitMultipassService(ms MultipassService) {
-	multipassService = ms
-}
-
-func GetMultipassService() MultipassService {
-	return multipassService
-}
 
 func InitK8sService(ks KubernetesService) {
 	k8sService = ks
@@ -33,8 +24,6 @@ func GetLibvirtService() LibvirtService {
 
 func GetNodeManager(backend string) NodeManager {
 	switch backend {
-	case "multipass":
-		return multipassService
 	case "libvirt":
 		return libvirtService
 	default:

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"mediumkube/pkg/common"
+	"mediumkube/pkg/models"
 	"mediumkube/pkg/utils"
 	"os"
 	"strings"
@@ -23,8 +24,8 @@ func parse(leaseEntry string) (string, string, string, string, string) {
 }
 
 // ListNSPairs list pairs from a local lease file
-func ListNSPairs(leaseFilePath string) []common.NSPair {
-	res := make([]common.NSPair, 0)
+func ListNSPairs(leaseFilePath string) []models.NSPair {
+	res := make([]models.NSPair, 0)
 	file, err := os.Open(leaseFilePath)
 	utils.CheckErr(err)
 	defer file.Close()
@@ -37,7 +38,7 @@ func ListNSPairs(leaseFilePath string) []common.NSPair {
 		if node == "*" {
 			continue
 		}
-		res = append(res, common.NSPair{Host: node, Address: ip})
+		res = append(res, models.NSPair{Host: node, Address: ip})
 	}
 	return res
 }
@@ -45,8 +46,8 @@ func ListNSPairs(leaseFilePath string) []common.NSPair {
 // ListETCDNSPairs
 // List pairs on etcd that matchs given cidr
 // To fetch all pairs, set cidr to empty string
-func ListETCDNsPairs(client clientv2.Client, dnsPrefix string, cidr string) []common.NSPair {
-	res := make([]common.NSPair, 0)
+func ListETCDNsPairs(client clientv2.Client, dnsPrefix string, cidr string) []models.NSPair {
+	res := make([]models.NSPair, 0)
 	kpi := clientv2.NewKeysAPI(client)
 	resp, err := kpi.Get(context.TODO(), dnsPrefix, nil)
 	if err != nil {
@@ -55,7 +56,7 @@ func ListETCDNsPairs(client clientv2.Client, dnsPrefix string, cidr string) []co
 	}
 	for _, node := range resp.Node.Nodes {
 		v := []byte(node.Value)
-		pair := common.NSPair{}
+		pair := models.NSPair{}
 		yaml.Unmarshal(v, &pair)
 		if cidr == "" || utils.CidrMatch(pair.Address, cidr) {
 			res = append(res, pair)
@@ -64,7 +65,7 @@ func ListETCDNsPairs(client clientv2.Client, dnsPrefix string, cidr string) []co
 	return res
 }
 
-func exist(pairs []common.NSPair, tgt common.NSPair) bool {
+func exist(pairs []models.NSPair, tgt models.NSPair) bool {
 	for _, pair := range pairs {
 		if pair.Host == tgt.Host && pair.Address == tgt.Address {
 			return true
@@ -73,9 +74,9 @@ func exist(pairs []common.NSPair, tgt common.NSPair) bool {
 	return false
 }
 
-func SyncDNSLease(local []common.NSPair, remote []common.NSPair) ([]common.NSPair, []common.NSPair) {
-	in := make([]common.NSPair, 0)
-	out := make([]common.NSPair, 0)
+func SyncDNSLease(local []models.NSPair, remote []models.NSPair) ([]models.NSPair, []models.NSPair) {
+	in := make([]models.NSPair, 0)
+	out := make([]models.NSPair, 0)
 	for _, l := range local {
 		if !exist(remote, l) {
 			in = append(in, l)

@@ -13,6 +13,7 @@ overlay:
   cidr: 10.114.114.0/24
   dns-etcd-prefix: "/xmbsmdsj.co.uk/dns"
   lease-etcd-prefix: "/xmbsmdsj.co.uk/lease"
+  domain-etcd-prefix: "/xmbsmdsj.co.uk/domain"
   flannel:
     network: 10.114.114.0/16
     etcd-prefix: "/xmbsmdsj.co.uk/network"
