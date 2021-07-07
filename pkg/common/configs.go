@@ -5,6 +5,7 @@ import "path"
 type Overlay struct {
 	Master          string  `yaml:"master"`
 	EtcdPort        int     `yaml:"etcd-port"`
+	GRPCPort        int     `yaml:"grpc-port"`
 	Flannel         Flannel `yaml:"flannel"`
 	Enabled         bool    `yaml:"enabled"`
 	DNSEtcdPrefix   string  `yaml:"dns-etcd-prefix"`

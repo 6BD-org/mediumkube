@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-option go_package = "xmbsmdsj.com/mediumkube/pkg/daemon/gprc";
+option go_package = "xmbsmdsj.com/mediumkube/pkg/daemon/mgrpc";
+
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./domain.proto
 
 
 service DomainSercice {
