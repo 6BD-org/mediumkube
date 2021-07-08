@@ -23,3 +23,14 @@ Behavior: Delete rules from routing table.
 Lease definition has a timestamp and a ttl defined. If timestamp + ttl is less than current timestamp, then the lease is outdated.
 
 Behavior: Delete rules from routing table.
+
+
+## How are cluster-wise domains managed
+
+Mediumkube aggregates domains of the entire cluster by broadcasting local domains to etcd. When doing `mediumkube list`, it sends a gRPC request to local mediumkubed, and mediumkubed fetches domain list from etcd.
+
+When creating domains, there are limitations such as unique domain name, and that comes to distributed consistency. Mediumkube implements a distributed lock using etcd, and some operations like domain deployment are locked globally. Mediumkube also has a built-in event bus that can catch up with events like domain deployed, and commerce sync event.
+
+## Domain scheduling
+
+When creating domains, user don't need to specify where to place it. Mediumkube automatically pick up a node in cluster and assign domain creation plan to it. 
