@@ -81,6 +81,6 @@ type OverallConfig struct {
 type KVMDomainConfig struct {
 }
 
-func (config OverallConfig) LeaseFile() string {
+func (config OverallConfig) DomainNSFile() string {
 	return path.Join(config.TmpDir, "dnsmasq.lease")
 }

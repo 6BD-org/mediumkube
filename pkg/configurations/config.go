@@ -8,10 +8,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var overallConfig *common.OverallConfig = &common.OverallConfig{}
+const (
+	configDir = "/etc/mediumkube/config.yaml"
+)
+
+var overallConfig *common.OverallConfig = nil
 
 // InitConfig initialize configuration context
-func InitConfig(configDir string) {
+func InitConfig() {
 	log.Println("Using configuration file: ", configDir)
 	configStr := utils.ReadByte(configDir)
 	err := yaml.Unmarshal(configStr, overallConfig)
@@ -20,5 +24,8 @@ func InitConfig(configDir string) {
 
 // Config Get config
 func Config() *common.OverallConfig {
+	if overallConfig == nil {
+		InitConfig()
+	}
 	return overallConfig
 }

@@ -1,27 +1,25 @@
-package mesh
+package services
 
 import (
 	"context"
 	"encoding/json"
 	"mediumkube/pkg/common"
-	etcd "mediumkube/pkg/etcd"
+	"mediumkube/pkg/configurations"
+	"mediumkube/pkg/etcd"
 	"mediumkube/pkg/models"
 
 	"go.etcd.io/etcd/client/v2"
 	"k8s.io/klog/v2"
 )
 
-func ClusterLeases(config *common.OverallConfig) ([]models.PeerLease, error) {
-	return pullLease(config)
+type MeshService struct {
+	config *common.OverallConfig
 }
 
-func ListDomains(config *common.OverallConfig) ([]models.Domain, error) {
+func (m *MeshService) ListDomains() ([]models.Domain, error) {
 	res := make([]models.Domain, 0)
-	prefix := config.Overlay.DomainEtcdPrefix
-	if etcdClient == nil {
-		etcdClient = etcd.NewClientOrDie()
-	}
-	kpi := client.NewKeysAPI(etcdClient)
+	prefix := m.config.Overlay.DomainEtcdPrefix
+	kpi := client.NewKeysAPI(etcd.NewClientOrDie())
 	resp, err := kpi.Get(context.TODO(), prefix, nil)
 	if err != nil {
 		return res, nil
@@ -38,4 +36,8 @@ func ListDomains(config *common.OverallConfig) ([]models.Domain, error) {
 		}
 	}
 	return res, nil
+}
+
+func init() {
+	InitMeshService(MeshService{config: configurations.Config()})
 }
