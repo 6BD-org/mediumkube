@@ -21,27 +21,33 @@ const (
 	leaseTTL = 60 // 6 seconds
 )
 
-var (
-	etcdClient clientv2.Client
-)
+func _nsKey(config *common.OverallConfig, k string) string {
+	prefix := config.Overlay.DNSEtcdPrefix
+	return prefix + "/" + k
+}
 
-func doSync() {
-	config := configurations.Config()
-	locals := network.ListNSPairs(config.LeaseFile())
-	remotes := network.ListETCDNsPairs(etcdClient, config.Overlay.DNSEtcdPrefix, config.Overlay.Cidr)
+func _leaseKey(config *common.OverallConfig) string {
+	return config.Overlay.LeaseEtcdPrefix + "/" + strings.Replace(config.Overlay.Cidr, "/", "-", -1)
+}
+
+func _domainKey(config *common.OverallConfig) string {
+	return config.Overlay.DomainEtcdPrefix + "/" + strings.Replace(config.Overlay.Cidr, "/", "-", -1)
+}
+
+func doSync(config *common.OverallConfig) {
+	locals := network.ListNSPairs(config.DomainNSFile())
+	remotes := network.ListETCDNsPairs(etcd.NewClientOrDie(), config.Overlay.DNSEtcdPrefix, config.Overlay.Cidr)
 	in, out := network.SyncDNSLease(locals, remotes)
 
-	prefix := config.Overlay.DNSEtcdPrefix
-	kpi := clientv2.NewKeysAPI(etcdClient)
+	kpi := clientv2.NewKeysAPI(etcd.NewClientOrDie())
 
 	for _, pairIn := range in {
 		// PUT etcd
 		val, marshalErr := json.Marshal(&pairIn)
-		prefixedKey := prefix + "/" + pairIn.Host
 		if marshalErr != nil {
 			klog.Error(marshalErr)
 		} else {
-			_, err := kpi.Set(context.TODO(), prefixedKey, string(val), nil)
+			_, err := kpi.Set(context.TODO(), _nsKey(config, pairIn.Host), string(val), nil)
 			if err != nil {
 				klog.Error(err)
 			} else {
@@ -52,7 +58,7 @@ func doSync() {
 
 	for _, pairOut := range out {
 		// DELETE etcd
-		kpi.Delete(context.TODO(), pairOut.Host, nil)
+		kpi.Delete(context.TODO(), _nsKey(config, pairOut.Host), nil)
 	}
 }
 
@@ -69,9 +75,8 @@ func pushLease(config *common.OverallConfig) {
 		return
 	}
 
-	kpi := clientv2.NewKeysAPI(etcdClient)
-	key := config.Overlay.LeaseEtcdPrefix + "/" + strings.Replace(config.Overlay.Cidr, "/", "-", -1)
-	_, err = kpi.Set(context.TODO(), key, string(payload), nil)
+	kpi := clientv2.NewKeysAPI(etcd.NewClientOrDie())
+	_, err = kpi.Set(context.TODO(), _leaseKey(config), string(payload), nil)
 	if err != nil {
 		klog.Error(err)
 		return
@@ -80,7 +85,7 @@ func pushLease(config *common.OverallConfig) {
 
 func pullLease(config *common.OverallConfig) ([]models.PeerLease, error) {
 	res := make([]models.PeerLease, 0)
-	kpi := clientv2.NewKeysAPI(etcdClient)
+	kpi := clientv2.NewKeysAPI(etcd.NewClientOrDie())
 	resp, err := kpi.Get(context.TODO(), config.Overlay.LeaseEtcdPrefix, nil)
 	if err != nil {
 		klog.Error(err)
@@ -125,7 +130,7 @@ func doLeaseSync(config *common.OverallConfig) {
 }
 
 func doDomainSync(config *common.OverallConfig) {
-	key := config.Overlay.DomainEtcdPrefix + "/" + strings.Replace(config.Overlay.Cidr, "/", "-", -1)
+
 	nodeManager := services.GetNodeManager(config.Backend)
 	domains, err := nodeManager.List()
 	if err != nil {
@@ -134,12 +139,11 @@ func doDomainSync(config *common.OverallConfig) {
 	}
 
 	payload, err := json.Marshal(domains)
-	klog.Info("Syncing domains: ", payload)
 	if err != nil {
 		klog.Error("Failed to marshal local domains", err)
 	}
-	kpi := clientv2.NewKeysAPI(etcdClient)
-	_, err = kpi.Set(context.TODO(), key, string(payload), nil)
+	kpi := clientv2.NewKeysAPI(etcd.NewClientOrDie())
+	_, err = kpi.Set(context.TODO(), _domainKey(config), string(payload), nil)
 	if err != nil {
 		klog.Error("Failed to sync domains", err)
 	}
@@ -147,10 +151,7 @@ func doDomainSync(config *common.OverallConfig) {
 
 func CommerceSync() {
 	config := configurations.Config()
-	if etcdClient == nil {
-		etcdClient = etcd.NewClientOrDie()
-	}
 	go doLeaseSync(config)
-	go doSync()
+	go doSync(config)
 	go doDomainSync(config)
 }

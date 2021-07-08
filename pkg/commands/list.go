@@ -2,9 +2,8 @@ package commands
 
 import (
 	"fmt"
-	"mediumkube/pkg/configurations"
-	"mediumkube/pkg/daemon/mesh"
 	"mediumkube/pkg/models"
+	"mediumkube/pkg/services"
 	"mediumkube/pkg/utils"
 	"os"
 
@@ -28,8 +27,7 @@ func disp(resp []models.Domain) {
 }
 
 func (handler ListHandler) Handle(args []string) {
-	config := configurations.Config()
-	domains, err := mesh.ListDomains(config)
+	domains, err := services.GetMeshService().ListDomains()
 	utils.CheckErr(err)
 	disp(domains)
 }

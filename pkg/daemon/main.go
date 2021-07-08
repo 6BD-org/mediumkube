@@ -43,11 +43,10 @@ func stopDaemon() {
 func main() {
 
 	tmpFlagSet := flag.NewFlagSet("", flag.ExitOnError)
-	configDir := tmpFlagSet.String("config", "/etc/mediumkube/config.yaml", "Configuration file")
 	profiling := tmpFlagSet.Bool("p", false, "Enable Profiling")
 	profilingPort := tmpFlagSet.Int("pport", 7777, "Port of profiling service")
 	tmpFlagSet.Parse(os.Args[1:])
-	configurations.InitConfig(*configDir)
+	configurations.InitConfig()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
