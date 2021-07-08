@@ -14,6 +14,7 @@ overlay:
   dns-etcd-prefix: "/xmbsmdsj.co.uk/dns"
   lease-etcd-prefix: "/xmbsmdsj.co.uk/lease"
   domain-etcd-prefix: "/xmbsmdsj.co.uk/domain"
+  dlock-etcd-prefix: "/xmbsmdsj.co.uk/lock"
   flannel:
     network: 10.114.114.0/16
     etcd-prefix: "/xmbsmdsj.co.uk/network"

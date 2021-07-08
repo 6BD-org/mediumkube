@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"mediumkube/pkg/common"
+	"mediumkube/pkg/common/event"
 	"mediumkube/pkg/configurations"
 	"mediumkube/pkg/daemon/mesh"
 	"mediumkube/pkg/daemon/mgrpc"
@@ -53,6 +54,7 @@ func main() {
 	signal.Notify(c, os.Kill)
 	signal.Notify(c, syscall.SIGTERM)
 
+	eventBus := event.GetEventBus()
 	wg := sync.WaitGroup{}
 
 	sigHandler := func() {
@@ -119,6 +121,8 @@ func main() {
 			processBridge(config)
 			dnsMasq(config)
 			processMesh(config)
+		case <-eventBus.DomainUpdate:
+			mesh.SyncDomain(config)
 		case c = <-close:
 			mesh.StopMesh()
 			dnsMasqProc.Kill()

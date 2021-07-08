@@ -11,6 +11,7 @@ type Overlay struct {
 	DNSEtcdPrefix    string  `yaml:"dns-etcd-prefix"`
 	LeaseEtcdPrefix  string  `yaml:"lease-etcd-prefix"`
 	DomainEtcdPrefix string  `yaml:"domain-etcd-prefix"`
+	DLockEtcdPrefix  string  `yaml:"dlock-etcd-prefix"`
 	Cidr             string  `yaml:"cidr"`
 }
 

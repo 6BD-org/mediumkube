@@ -22,7 +22,14 @@ message DomainResp {
 }
 
 message DomainCreationParam {
+    repeated DomainConfig config = 1;
+}
 
+message DomainConfig {
+    string name = 1;
+    string cpu = 2;
+    string memory = 3;
+    string disk = 4;
 }
 
 message DomainCreationResp {

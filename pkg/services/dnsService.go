@@ -21,7 +21,7 @@ func (dns *DNSService) isMeshEnabled() bool {
 
 func (dns *DNSService) Resolve(hostname string) (string, bool) {
 	if dns.isMeshEnabled() {
-		return network.Resolve(dns.config.LeaseFile(), hostname)
+		return network.Resolve(dns.config.DomainNSFile(), hostname)
 	} else {
 		// ETCD not supported yet
 		// return network.Resolve(dns.config.LeaseFile(), hostname)

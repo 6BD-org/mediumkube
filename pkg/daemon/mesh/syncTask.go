@@ -149,6 +149,10 @@ func doDomainSync(config *common.OverallConfig) {
 	}
 }
 
+func SyncDomain(config *common.OverallConfig) {
+	doDomainSync(config)
+}
+
 func CommerceSync() {
 	config := configurations.Config()
 	go doLeaseSync(config)

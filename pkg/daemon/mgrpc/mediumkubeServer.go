@@ -3,11 +3,15 @@ package mgrpc
 import (
 	context "context"
 	"mediumkube/pkg/common"
+	"mediumkube/pkg/common/event"
+	"mediumkube/pkg/dlock"
 	"mediumkube/pkg/services"
 
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
 	"google.golang.org/protobuf/runtime/protoimpl"
+)
+
+const (
+	domainCreationLockType = "LOCK_DOMAIN_CREATION"
 )
 
 type MediumKubeServer struct {
@@ -28,7 +32,12 @@ func (s *MediumKubeServer) ListDomains(context.Context, *EmptyParam) (*DomainLis
 }
 
 func (s *MediumKubeServer) DeployDomain(context.Context, *DomainCreationParam) (*DomainCreationResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeployDomain not implemented")
+	manager := services.GetNodeManager(s.config.Backend)
+	dlock.NewEtcdLockManager(s.config).DoWithLock(domainCreationLockType, 5*60*1000*1000*1000, func() {
+		manager.Deploy(make([]common.NodeConfig, 0), "", "")
+	}, func() {})
+	event.GetEventBus().DomainUpdate <- event.DomainEvent{}
+	return nil, nil
 }
 
 func NewServer(config *common.OverallConfig) *MediumKubeServer {
