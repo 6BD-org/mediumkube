@@ -7,7 +7,8 @@ option go_package = "xmbsmdsj.com/mediumkube/pkg/daemon/mgrpc";
 
 service DomainSercice {
     rpc ListDomains(EmptyParam) returns (DomainListResp);
-    rpc DeployDomain(DomainCreationParam) returns (DomainCreationResp);
+    rpc DeployDomain(DomainCreationParam) returns ( stream DomainCreationResp);
+    rpc DeleteDomains(DomainDeletionParam) returns (DomainDeletionResp);
 }
 
 message DomainListResp {
@@ -32,9 +33,19 @@ message DomainConfig {
     string disk = 4;
 }
 
+
+
 message DomainCreationResp {
+    bytes content = 1;
 
 }
 
+message DomainDeletionParam {
+    repeated string names = 1;
+}
+
+message DomainDeletionResp {
+    
+}
 
 message EmptyParam {}

@@ -53,7 +53,7 @@ ERR:
 		goto ERR
 	}
 
-	if err != nil {
+	if resp == nil || resp.Node == nil {
 		// Create if not exist
 		_, err = kpi.Set(context.TODO(), _lockKey(m.config, lockType), string(payload), nil)
 		if err != nil {

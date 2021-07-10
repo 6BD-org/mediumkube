@@ -2,10 +2,12 @@ package mgrpc
 
 import (
 	context "context"
+	"fmt"
 	"mediumkube/pkg/common"
 	"mediumkube/pkg/common/event"
 	"mediumkube/pkg/dlock"
 	"mediumkube/pkg/services"
+	"strings"
 
 	"google.golang.org/protobuf/runtime/protoimpl"
 )
@@ -31,13 +33,55 @@ func (s *MediumKubeServer) ListDomains(context.Context, *EmptyParam) (*DomainLis
 	return &resp, nil
 }
 
-func (s *MediumKubeServer) DeployDomain(context.Context, *DomainCreationParam) (*DomainCreationResp, error) {
+func (s *MediumKubeServer) DeployDomain(param *DomainCreationParam, stream DomainSercice_DeployDomainServer) error {
 	manager := services.GetNodeManager(s.config.Backend)
+	var err error
 	dlock.NewEtcdLockManager(s.config).DoWithLock(domainCreationLockType, 5*60*1000*1000*1000, func() {
-		manager.Deploy(make([]common.NodeConfig, 0), "", "")
-	}, func() {})
+		ms := services.GetMeshService()
+		existingDomains, err := ms.ListDomains()
+		if err != nil {
+			return
+		}
+		sink := func(b []byte) error {
+			resp := DomainCreationResp{
+				Content: b,
+			}
+			return stream.Send(&resp)
+		}
+		ncs := make([]common.NodeConfig, 0)
+		for _, config := range param.Config {
+			for _, ed := range existingDomains {
+				if strings.ToLower(ed.Name) == strings.ToLower(config.Name) {
+					err = fmt.Errorf("Domain already exists")
+					return
+				}
+			}
+
+			ncs = append(ncs, common.NodeConfig{
+				CPU:  config.Cpu,
+				MEM:  config.Memory,
+				DISK: config.Disk,
+				Name: config.Name,
+			})
+		}
+		manager.Deploy(ncs, s.config.CloudInit, s.config.Image, sink)
+	}, func() {
+		err = fmt.Errorf("Failed to acquire lock, giving up deployment")
+	})
+	if err != nil {
+		return err
+	}
+
 	event.GetEventBus().DomainUpdate <- event.DomainEvent{}
-	return nil, nil
+	return nil
+}
+
+func (s *MediumKubeServer) DeleteDomains(ctx context.Context, param *DomainDeletionParam) (*DomainDeletionResp, error) {
+	manager := services.GetNodeManager(s.config.Backend)
+	for _, domain := range param.Names {
+		manager.Purge(domain)
+	}
+	return &DomainDeletionResp{}, nil
 }
 
 func NewServer(config *common.OverallConfig) *MediumKubeServer {

@@ -19,7 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DomainSerciceClient interface {
 	ListDomains(ctx context.Context, in *EmptyParam, opts ...grpc.CallOption) (*DomainListResp, error)
-	DeployDomain(ctx context.Context, in *DomainCreationParam, opts ...grpc.CallOption) (*DomainCreationResp, error)
+	DeployDomain(ctx context.Context, in *DomainCreationParam, opts ...grpc.CallOption) (DomainSercice_DeployDomainClient, error)
+	DeleteDomains(ctx context.Context, in *DomainDeletionParam, opts ...grpc.CallOption) (*DomainDeletionResp, error)
 }
 
 type domainSerciceClient struct {
@@ -39,9 +40,41 @@ func (c *domainSerciceClient) ListDomains(ctx context.Context, in *EmptyParam, o
 	return out, nil
 }
 
-func (c *domainSerciceClient) DeployDomain(ctx context.Context, in *DomainCreationParam, opts ...grpc.CallOption) (*DomainCreationResp, error) {
-	out := new(DomainCreationResp)
-	err := c.cc.Invoke(ctx, "/DomainSercice/DeployDomain", in, out, opts...)
+func (c *domainSerciceClient) DeployDomain(ctx context.Context, in *DomainCreationParam, opts ...grpc.CallOption) (DomainSercice_DeployDomainClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DomainSercice_ServiceDesc.Streams[0], "/DomainSercice/DeployDomain", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &domainSerciceDeployDomainClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type DomainSercice_DeployDomainClient interface {
+	Recv() (*DomainCreationResp, error)
+	grpc.ClientStream
+}
+
+type domainSerciceDeployDomainClient struct {
+	grpc.ClientStream
+}
+
+func (x *domainSerciceDeployDomainClient) Recv() (*DomainCreationResp, error) {
+	m := new(DomainCreationResp)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *domainSerciceClient) DeleteDomains(ctx context.Context, in *DomainDeletionParam, opts ...grpc.CallOption) (*DomainDeletionResp, error) {
+	out := new(DomainDeletionResp)
+	err := c.cc.Invoke(ctx, "/DomainSercice/DeleteDomains", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +86,8 @@ func (c *domainSerciceClient) DeployDomain(ctx context.Context, in *DomainCreati
 // for forward compatibility
 type DomainSerciceServer interface {
 	ListDomains(context.Context, *EmptyParam) (*DomainListResp, error)
-	DeployDomain(context.Context, *DomainCreationParam) (*DomainCreationResp, error)
+	DeployDomain(*DomainCreationParam, DomainSercice_DeployDomainServer) error
+	DeleteDomains(context.Context, *DomainDeletionParam) (*DomainDeletionResp, error)
 	mustEmbedUnimplementedDomainSerciceServer()
 }
 
@@ -64,8 +98,11 @@ type UnimplementedDomainSerciceServer struct {
 func (UnimplementedDomainSerciceServer) ListDomains(context.Context, *EmptyParam) (*DomainListResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDomains not implemented")
 }
-func (UnimplementedDomainSerciceServer) DeployDomain(context.Context, *DomainCreationParam) (*DomainCreationResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeployDomain not implemented")
+func (UnimplementedDomainSerciceServer) DeployDomain(*DomainCreationParam, DomainSercice_DeployDomainServer) error {
+	return status.Errorf(codes.Unimplemented, "method DeployDomain not implemented")
+}
+func (UnimplementedDomainSerciceServer) DeleteDomains(context.Context, *DomainDeletionParam) (*DomainDeletionResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDomains not implemented")
 }
 func (UnimplementedDomainSerciceServer) mustEmbedUnimplementedDomainSerciceServer() {}
 
@@ -98,20 +135,41 @@ func _DomainSercice_ListDomains_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DomainSercice_DeployDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DomainCreationParam)
+func _DomainSercice_DeployDomain_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DomainCreationParam)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(DomainSerciceServer).DeployDomain(m, &domainSerciceDeployDomainServer{stream})
+}
+
+type DomainSercice_DeployDomainServer interface {
+	Send(*DomainCreationResp) error
+	grpc.ServerStream
+}
+
+type domainSerciceDeployDomainServer struct {
+	grpc.ServerStream
+}
+
+func (x *domainSerciceDeployDomainServer) Send(m *DomainCreationResp) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _DomainSercice_DeleteDomains_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DomainDeletionParam)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DomainSerciceServer).DeployDomain(ctx, in)
+		return srv.(DomainSerciceServer).DeleteDomains(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/DomainSercice/DeployDomain",
+		FullMethod: "/DomainSercice/DeleteDomains",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DomainSerciceServer).DeployDomain(ctx, req.(*DomainCreationParam))
+		return srv.(DomainSerciceServer).DeleteDomains(ctx, req.(*DomainDeletionParam))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -128,10 +186,16 @@ var DomainSercice_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DomainSercice_ListDomains_Handler,
 		},
 		{
-			MethodName: "DeployDomain",
-			Handler:    _DomainSercice_DeployDomain_Handler,
+			MethodName: "DeleteDomains",
+			Handler:    _DomainSercice_DeleteDomains_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "DeployDomain",
+			Handler:       _DomainSercice_DeployDomain_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "domain.proto",
 }
