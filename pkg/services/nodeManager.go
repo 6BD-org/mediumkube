@@ -7,7 +7,7 @@ import (
 
 // NodeManager manages nodes
 type NodeManager interface {
-	Deploy(nodes []common.NodeConfig, cloudInit string, image string)
+	Deploy(nodes []common.NodeConfig, cloudInit string, image string, sink ...func([]byte) error)
 	Purge(node string)
 	Start(node string)
 	Stop(node string)

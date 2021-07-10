@@ -53,12 +53,7 @@ func (c OverallConfig) NodeMemory(node string) string {
 
 // NodeDiskImage Get disk image path of a node
 func (c OverallConfig) NodeDiskImage(node string) string {
-	for _, nc := range c.NodeConfig {
-		if nc.Name == node {
-			return path.Join(c.TmpDir, fmt.Sprintf("%v-os.img", nc.Name))
-		}
-	}
-	panic("Node not found")
+	return path.Join(c.TmpDir, fmt.Sprintf("%v-os.img", node))
 }
 
 // BridgeName get mediumkube bridge name

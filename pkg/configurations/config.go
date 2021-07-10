@@ -18,6 +18,7 @@ var overallConfig *common.OverallConfig = nil
 func InitConfig() {
 	log.Println("Using configuration file: ", configDir)
 	configStr := utils.ReadByte(configDir)
+	overallConfig = &common.OverallConfig{}
 	err := yaml.Unmarshal(configStr, overallConfig)
 	utils.CheckErr(err)
 }

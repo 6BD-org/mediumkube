@@ -113,7 +113,7 @@ func copyAndResizeMedia(src string, tgt string, size string) {
 }
 
 // CreateDomain Create a domain, overwriting disk image
-func (service LibvirtService) CreateDomain(name string, cpu string, memory string, disk string, net string, image string, cloudInitImg string) {
+func (service LibvirtService) CreateDomain(name string, cpu string, memory string, disk string, net string, image string, cloudInitImg string, sinks ...func([]byte) error) {
 	param := common.NewDomainCreationParam(
 		name, cpu, memory, image, cloudInitImg, net,
 	)
@@ -137,11 +137,18 @@ func (service LibvirtService) CreateDomain(name string, cpu string, memory strin
 		return
 	}
 
+	if len(sinks) == 0 {
+		return
+	}
+
+	sink := sinks[0]
+	closed := false
+
+	// TODO: Stream log with grpc stream
 	bufStr := bytes.NewBufferString("")
 	var handleWatch int = -1
 
 	mux := sync.Mutex{}
-	f := os.NewFile(STDOUT_FD, "")
 
 	steamOut := func(stream *libvirt.Stream, cbType libvirt.StreamEventType) {
 		mux.Lock()
@@ -170,7 +177,11 @@ func (service LibvirtService) CreateDomain(name string, cpu string, memory strin
 		mux.Lock()
 		defer mux.Unlock()
 		if events&libvirt.EVENT_HANDLE_WRITABLE > 0 {
-			f.Write(bufStr.Bytes())
+
+			err := sink(bufStr.Bytes())
+			if err != nil {
+				closed = true
+			}
 			bufStr.Reset()
 			libvirt.EventUpdateHandle(handleWatch, 0)
 		}
@@ -199,7 +210,7 @@ func (service LibvirtService) CreateDomain(name string, cpu string, memory strin
 		return
 	}
 
-	for {
+	for !closed {
 		if err := libvirt.EventRunDefaultImpl(); err != nil {
 			klog.Error(err)
 		}
@@ -214,7 +225,7 @@ type LibvirtService struct {
 
 // Deploy deploy a domain
 // In libvirt backend, remote images are nolonger supported.
-func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string, image string) {
+func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string, image string, sinks ...func([]byte) error) {
 	defer service.conn.Close()
 	defer cleanUp()
 	for _, n := range nodes {
@@ -238,6 +249,7 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string
 			service.config.Bridge.Name,
 			tgtImg,
 			cloudImage,
+			sinks...,
 		)
 	}
 
