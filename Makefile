@@ -1,8 +1,17 @@
 SYSTEMD_DIR=/lib/systemd/system
+GRPC_ROOT=pkg/daemon/mgrpc
+
 
 test:
 	go clean -testcache
 	go test ./tests/...
+
+generate:
+	protoc --go_out=pkg/daemon/mgrpc/ \
+	--go_opt=paths=source_relative \
+	 --go-grpc_out=pkg/daemon/mgrpc/ \
+	 --go-grpc_opt=paths=source_relative \
+	 pkg/daemon/mgrpc/domain.proto
 
 mediumkube:
 	go build -o build/mediumkube main.go
@@ -36,9 +45,11 @@ install: mediumkube mediumkubed
 	sudo systemctl daemon-reload
 	sudo systemctl enable mediumkube
 
+.PHONY: stop
 stop:
 	sudo systemctl stop mediumkube
 
+.PHONY: start
 start:
 	sudo systemctl start mediumkube	
 
