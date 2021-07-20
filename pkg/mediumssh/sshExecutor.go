@@ -91,9 +91,10 @@ Opcode 	Argument 	Description 	Reference 	Note
 
 // SSHMeta stores extra metadata used my mediumssh
 type sshMeta struct {
-	username string
-	host     string
-	port     int
+	username    string
+	host        string
+	port        int
+	privKeyPath string
 }
 
 // SSHClient Mediunkube managed ssh client
@@ -125,7 +126,7 @@ func SSHLogin(username string, host string, keyPath string) *SSHClient {
 	key := utils.ReadByte(keyPath)
 	signer, err := ssh.ParsePrivateKey(key)
 	utils.CheckErr(err)
-
+	klog.Info(keyPath)
 	config := &ssh.ClientConfig{
 		User: username,
 		Auth: []ssh.AuthMethod{
@@ -137,7 +138,8 @@ func SSHLogin(username string, host string, keyPath string) *SSHClient {
 	utils.CheckErr(err)
 	hostAndPort := strings.Split(host, ":")
 	port, _ := strconv.Atoi(hostAndPort[1])
-	meta := sshMeta{username: username, host: hostAndPort[0], port: port}
+	meta := sshMeta{username: username, host: hostAndPort[0], port: port, privKeyPath: keyPath}
+	klog.Info("SSH connection established")
 	return &SSHClient{client: client, meta: &meta}
 }
 
@@ -367,7 +369,7 @@ func (sc SSHClient) Receive(src string, tgt string) {
 
 // Shell launch a shell
 func (sc SSHClient) Shell() {
-	utils.AttachAndExec(exec.Command("ssh", fmt.Sprintf("%v@%v", sc.meta.username, sc.meta.host)))
+	utils.AttachAndExec(exec.Command("ssh", fmt.Sprintf("%v@%v", sc.meta.username, sc.meta.host), "-i", sc.meta.privKeyPath))
 }
 
 func init() {

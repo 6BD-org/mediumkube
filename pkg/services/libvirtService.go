@@ -492,7 +492,6 @@ func (service LibvirtService) List() ([]models.Domain, error) {
 }
 
 func init() {
-	log.Println("Initing socket connection")
 	libvirt.EventRegisterDefaultImpl()
 
 	conn, err := libvirt.NewConnect("qemu:///system")

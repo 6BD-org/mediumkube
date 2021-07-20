@@ -48,7 +48,6 @@ func main() {
 	profiling := tmpFlagSet.Bool("p", false, "Enable Profiling")
 	profilingPort := tmpFlagSet.Int("pport", 7777, "Port of profiling service")
 	tmpFlagSet.Parse(os.Args[1:])
-	configurations.InitConfig()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
