@@ -31,6 +31,7 @@ message DomainConfig {
     string cpu = 2;
     string memory = 3;
     string disk = 4;
+    string cloudInit = 5;
 }
 
 
