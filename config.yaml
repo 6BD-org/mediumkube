@@ -27,8 +27,8 @@ https-proxy: "http://10.114.114.1:1091"
 # It is suggested that you use multipass bridge network 
 # in case of ip change
 
-pub-key-dir: "/home/temp/.ssh/cloud.pub"
-priv-key-dir: "/home/temp/.ssh/cloud"
+pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
+priv-key-dir: "/home/temp/.ssh/id_rsa"
 host-pub-key-dir: "/home/temp/.ssh/id_rsa.pub"
 host-priv-key-dir: "/home/temp/.ssh/id_rsa"
 
