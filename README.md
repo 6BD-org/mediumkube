@@ -1,56 +1,32 @@
 # Set up a k8s cluster using libvirt
 
-It is planned that `mediunkube` no-longer depends on multipass by force, instead, multipass becomes an optional backend. Multipass is an active project, which is good, but it becomes difficult to catch up with. Therefore we move to `libvirt`, which is slower in release speed, and relatively stable and flexible.
+Mediumkube is a virtual machine management software developed on top of libvirt toolset. It is optimized for rapid deployment of highly customizable clusters, and it officially supports K8s receipy.
 
-## Prerequests
+## Prerequisite
+
+Mediumkube only supports Linux.
 
 - `qemu` The hardware emulator at lowest level, which does binary translation and emulates peripheral devices
 - `qemu-img` A tool used to manipulate disk images. MediumKube uses it to expand the image to desired size as user defined in yaml file
 - `libvirt` libvirt is a high-level library that provides APIs for convenient manipulations of domains, networks, etc... MediumKube uses these api via rpc and some commandline tools like `virsh`, `virt-install`
 - `kvm (optional)` A linux module that allows CPU to switch to guest state where privilege instructions fall back to hypervisor code. Using `kvm` along with `qemu` provides near-native performance because it avoids some unnecessary binary translations
 
-If you have trouble installing these software, just go ahead with `multipass` backend.
 
-## How does it work
+## Prerequisite (For developers)
 
-Please refer to [this](./daemon/README.md)
+- Mediumkube is developed using `go1.15.3`
+- Protocol buffer compiler is required. Check out [This link](https://grpc.io/docs/protoc-installation/) to install it
+- protoc code gen is required to generate mediumkube server and client
+
+```sh
+$ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+$ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+
+```
+
 
 ## Configuration references
 Please refer to [this](./docs/config.md) for configurations and [this](./docs/config-libvirt.md) for libvirt-specific configurations
-
-## Get started
-Node that mediumkube isn't a well packaged software right now, so is's not available in any kind of package manager. You will need to build the project and run binaries manually.
-
-To compile the project
-
-```bash
-$ make clean
-$ make all
-```
-This command will produce two executables, which are `mediumkube` and `mediumkubed`. First of all, you need to start `mediumkubed` and make sure it keeps running. Once you stop it, it will clean up configurations so you will lose ip table entries.
-
-```bash
-
-$ ./mediumkubed
-
-```
-
-Then you can deploy the machine
-
-```bash
-$ ./mediumkube deploy node1
-```
-
-This will deploy `node1` defined in your config file. The deployment process will attach you to the stdio of virtual machine, if you wanna escape, use `ctrl + ]`.
-
-To purge the machine that is installed, use 
-```bash
-
-$ ./mediumkube purge node1
-
-```
-
-Please note that you cannot purge a machine that is created by another backend! So if you want to purge a multipass machine, either use `multipass` command or change backend in config file.
 
 ## Install mediumkube
 
@@ -63,7 +39,6 @@ Another option of using mediumkube is install it to your linux system directly
 $ make clean install
 
 ```
-
 
 ## Use proxy
 
@@ -113,56 +88,8 @@ To purge a node (which means stop it, then delete it along with storages attache
 $ mediumkube purge node1
 ```
 
-## Plugins
-Plugins are standalone executable units in mediumkube, they can be invoked separately with arbitrary number of arguments. The use case of plugins would be hooks integrated with main tasks such as `deploy`, `init` and `join`, etc. 
-
-To see a list of plugins 
-
-```bash
-
-$ mediumkube plugin list
-```
-
-You can also see descriptions of plugins and execute them manually using `mediumkube` cli
-
-```bash
-
-# Execute a plugin
-$ mediumkube plugin exec [plugin name] arg1 arg2 arg3
-
-# Show descriptions of a plugin
-$ mediumkube plugin desc [plugin name]
-```
-
-
-# [DEPRECATED] Setup a k8s cluster using multipass
-
-This is a very simple toolkit that helps setup a K8s cluster easily (In order to learn some network knowledges about K8s)
-
-+ Easy to use
-- Unconfigurable networks
-- Very simple templating
-- Still need to init and join nodes manually
-- No distributed deployment
-- Like a minikube, but you'll have "real nodes" to access to. If you got the effort, you can config them for advanced uses
 
 ## Prepare
-
-### Install multipass
-
-```bash
-
-$ sudo apt install multipass
-
-```
-
-In order to use multipass behind a proxy, use following command
-
-```bash
-
-$ sudo snap set multipass proxy.http="http://{host}:{port}"
-
-```
 
 ### Template configurations
 
@@ -284,20 +211,7 @@ $ ./main render help
 
 ```
 
-## Multipass compatibility
-This cli is fully compatible with multipass. You can replace `multipass` with `./main` or any executable name that you build. Just for consistent-looking :smirk:
 
-```bash
-
-# These commands are identical
-
-$ multipass list
-
-$ ./main list 
-
-```
-
-Checkout the [multipass documentation](https://multipass.run/docs/working-with-instances)
 
 ## Launch instance
 
@@ -370,14 +284,3 @@ You can edit your yaml outside the cluster using your favorite text editor, and 
 ```bash
 $ ./mediumkube apply my.yaml
 ```
-
-
-## Roadmap
-- Cli tool for cluster management
-  - Cluster deployment
-  - Deletion
-  - Adding/Removing nodes
-  - Deploy kubernetes resources
-
-- Setup flannel network
-- Better template engine

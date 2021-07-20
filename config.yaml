@@ -6,8 +6,9 @@ bridge:
   inet: 10.114.114.1/24
 
 overlay:
+  id: "node01" # Id of current node. Must be unique across a cluster
   enabled: true # If overlay is disabled, there would be no etcd or flannel service
-  master: 172.16.223.54 # master node ip. Must be accessable from all other nodes
+  master: 172.16.222.133 # master node ip. Must be accessable from all other nodes
   etcd-port: 6872 # simplified config. Avoid loops
   grpc-port: 6874 # port of mediumkube grpc service
   cidr: 10.114.114.0/24

@@ -10,6 +10,7 @@ import (
 	"mediumkube/pkg/daemon/mesh"
 	"mediumkube/pkg/daemon/mgrpc"
 	"mediumkube/pkg/daemon/tasks"
+	"mediumkube/pkg/services"
 	"net"
 
 	"net/http"
@@ -127,6 +128,7 @@ func main() {
 			mesh.StopMesh()
 			dnsMasqProc.Kill()
 			tasks.CleanUpIptables()
+			services.GetNodeManager(config.Backend).Disconnect()
 			break
 		}
 		if c {

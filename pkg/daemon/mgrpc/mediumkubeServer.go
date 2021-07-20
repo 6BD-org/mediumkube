@@ -58,13 +58,14 @@ func (s *MediumKubeServer) DeployDomain(param *DomainCreationParam, stream Domai
 			}
 
 			ncs = append(ncs, common.NodeConfig{
-				CPU:  config.Cpu,
-				MEM:  config.Memory,
-				DISK: config.Disk,
-				Name: config.Name,
+				CPU:       config.Cpu,
+				MEM:       config.Memory,
+				DISK:      config.Disk,
+				Name:      config.Name,
+				CloudInit: config.CloudInit,
 			})
 		}
-		manager.Deploy(ncs, s.config.CloudInit, s.config.Image, sink)
+		manager.Deploy(ncs, s.config.Image, sink)
 	}, func() {
 		err = fmt.Errorf("Failed to acquire lock, giving up deployment")
 	})

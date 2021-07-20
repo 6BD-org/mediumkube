@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"mediumkube/pkg/common"
 	"mediumkube/pkg/configurations"
@@ -77,14 +78,32 @@ func meta(nodeName string) string {
 	return fmt.Sprintf(cloudInitMetaTemplate, nodeName, nodeName)
 }
 
-func (service LibvirtService) createCloudInitCD(cloudInit string, nodeName string) string {
+func ensureExistance(files ...string) error {
+	for _, f := range files {
+		_, err := os.Create(f)
+		if err != nil && !os.IsExist(err) {
+			return err
+		}
+	}
+	return nil
+}
 
+func (service LibvirtService) createCloudInitCD(cloudInit string, nodeName string) (string, error) {
+	var err error = nil
 	userData := path.Join(service.config.TmpDir, "user-data")
 	metaData := path.Join(service.config.TmpDir, "meta-data")
-
-	utils.Copy(cloudInit, userData)
-	utils.WriteStr(metaData, meta(nodeName), os.FileMode(0666))
-
+	err = ensureExistance(userData, metaData)
+	if err != nil {
+		return "", err
+	}
+	err = ioutil.WriteFile(userData, []byte(cloudInit), os.FileMode(0666))
+	if err != nil {
+		return "", err
+	}
+	err = ioutil.WriteFile(metaData, []byte(meta(nodeName)), os.FileMode(0666))
+	if err != nil {
+		return "", err
+	}
 	cloudImage := path.Join(service.config.TmpDir, fmt.Sprintf("%v-cloudinit.iso", nodeName))
 	os.Remove(cloudImage)
 	cmdGenIso := exec.Command(
@@ -94,15 +113,18 @@ func (service LibvirtService) createCloudInitCD(cloudInit string, nodeName strin
 		"-V", "cidata",
 		userData, metaData,
 	)
-	utils.AttachAndExec(cmdGenIso)
+	err = cmdGenIso.Run()
+	if err != nil {
+		return "", nil
+	}
 	fileToClean = append(fileToClean, userData)
 	fileToClean = append(fileToClean, metaData)
-	return cloudImage
+	return cloudImage, nil
 }
 
 func copyAndResizeMedia(src string, tgt string, size string) {
 
-	utils.Copy(src, tgt)
+	utils.CopyOrDie(src, tgt)
 
 	cmd := exec.Command(
 		"qemu-img", "resize",
@@ -225,13 +247,18 @@ type LibvirtService struct {
 
 // Deploy deploy a domain
 // In libvirt backend, remote images are nolonger supported.
-func (service LibvirtService) Deploy(nodes []common.NodeConfig, cloudInit string, image string, sinks ...func([]byte) error) {
-	defer service.conn.Close()
+func (service LibvirtService) Deploy(nodes []common.NodeConfig, image string, sinks ...func([]byte) error) {
 	defer cleanUp()
 	for _, n := range nodes {
 		// Step 0: Cloud init iso
-		cloudImage := service.createCloudInitCD(cloudInit, n.Name)
-
+		cloudImage, err := service.createCloudInitCD(n.CloudInit, n.Name)
+		if err != nil {
+			for _, sink := range sinks {
+				sink([]byte(err.Error()))
+			}
+			klog.Error(err)
+			return
+		}
 		// Step2 Copy image
 		srcImg := service.config.Image
 		tgtImg := service.config.NodeDiskImage(n.Name)
@@ -425,12 +452,17 @@ func (service LibvirtService) Shell(node string) {
 	sshClient.Shell()
 }
 
+func (service LibvirtService) Disconnect() {
+	service.conn.Close()
+}
+
 // List domains
 func (service LibvirtService) List() ([]models.Domain, error) {
-	defer service.conn.Close()
 	dms, err := service.conn.ListAllDomains(libvirt.CONNECT_LIST_DOMAINS_PERSISTENT)
 
-	utils.CheckErr(err)
+	if err != nil {
+		return nil, err
+	}
 
 	res := make([]models.Domain, 0)
 	for _, d := range dms {
@@ -449,10 +481,11 @@ func (service LibvirtService) List() ([]models.Domain, error) {
 		}
 
 		res = append(res, models.Domain{
-			Name:   name,
-			IP:     addr,
-			Status: stateStr,
-			Reason: fmt.Sprint(r),
+			Name:     name,
+			IP:       addr,
+			Status:   stateStr,
+			Reason:   fmt.Sprint(r),
+			Location: service.config.Overlay.Id,
 		})
 	}
 	return res, nil
@@ -461,9 +494,11 @@ func (service LibvirtService) List() ([]models.Domain, error) {
 func init() {
 	log.Println("Initing socket connection")
 	libvirt.EventRegisterDefaultImpl()
+
 	conn, err := libvirt.NewConnect("qemu:///system")
 	if err != nil {
 		klog.Error("Fail to connect to libvirt: ", err)
+		panic(err)
 	}
 	InitLibvritService(
 		LibvirtService{

@@ -23,8 +23,8 @@ func ReadByte(path string) []byte {
 	return data
 }
 
-// WriteStr to file or die
-func WriteStr(path string, content string, perm os.FileMode) {
+// WriteStrOrDie to file or die
+func WriteStrOrDie(path string, content string, perm os.FileMode) {
 	err := ioutil.WriteFile(path, []byte(content), perm)
 	CheckErr(err)
 }
@@ -81,21 +81,33 @@ func WalkDir(path string) []string {
 	return files
 }
 
-// Copy a file or die
-func Copy(src string, tgt string) {
+func Copy(src string, tgt string) error {
 	srcFile, err := os.Open(src)
-	CheckErr(err)
+	if err != nil {
+		return err
+	}
 	tgtFile, err := os.Create(tgt)
-	CheckErr(err)
+	if err != nil {
+		return err
+	}
 	defer srcFile.Close()
 	defer tgtFile.Close()
 
 	_, err = io.Copy(tgtFile, srcFile)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// CopyOrDie a file or die
+func CopyOrDie(src string, tgt string) {
+	err := Copy(src, tgt)
 	CheckErr(err)
 }
 
-// TrimPrefix Trims prefix directory
-func TrimPrefix(file string, prefix string) string {
+// TrimPrefixOrDie Trims prefix directory
+func TrimPrefixOrDie(file string, prefix string) string {
 	fileAbs, err := filepath.Abs(file)
 	CheckErr(err)
 

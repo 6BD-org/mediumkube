@@ -191,7 +191,7 @@ func (sc SSHClient) TransferR(srcDir string, targetDir string) {
 
 	files := utils.WalkDir(srcDir)
 	for _, file := range files {
-		fileName := utils.TrimPrefix(file, srcDir)
+		fileName := utils.TrimPrefixOrDie(file, srcDir)
 		// join /root/tmp, c, and the actual file name
 		tgt := path.Join(targetDir, dirName, fileName)
 		klog.Info("Transferring file: ", file)
@@ -213,7 +213,7 @@ func (sc SSHClient) ReceiveR(srcDir string, targetDir string) {
 
 	files := SFTPWalk(sc.client, srcDir)
 	for _, file := range files {
-		fileName := utils.TrimPrefix(file, srcDir)
+		fileName := utils.TrimPrefixOrDie(file, srcDir)
 		tgt := path.Join(targetDir, dirName, fileName)
 		src := file
 		klog.Info("Receiving file: ", file)

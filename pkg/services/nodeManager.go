@@ -7,7 +7,7 @@ import (
 
 // NodeManager manages nodes
 type NodeManager interface {
-	Deploy(nodes []common.NodeConfig, cloudInit string, image string, sink ...func([]byte) error)
+	Deploy(nodes []common.NodeConfig, image string, sink ...func([]byte) error)
 	Purge(node string)
 	Start(node string)
 	Stop(node string)
@@ -18,4 +18,5 @@ type NodeManager interface {
 	Shell(node string)
 	ExecScript(node string, script string, sudo bool)
 	List() ([]models.Domain, error)
+	Disconnect()
 }

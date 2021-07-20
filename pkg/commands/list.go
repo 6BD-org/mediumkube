@@ -16,11 +16,11 @@ type ListHandler struct {
 func disp(resp []models.Domain) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{
-		"Name", "IP", "STATE", "REASON",
+		"Name", "IP", "STATE", "REASON", "Location",
 	})
 	for _, d := range resp {
 		table.Append([]string{
-			d.Name, d.IP, d.Status, d.Reason,
+			d.Name, d.IP, d.Status, d.Reason, d.Location,
 		})
 	}
 	table.Render()

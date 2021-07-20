@@ -3,6 +3,7 @@ package common
 import "path"
 
 type Overlay struct {
+	Id               string  `yaml:"id"`
 	Master           string  `yaml:"master"`
 	EtcdPort         int     `yaml:"etcd-port"`
 	GRPCPort         int     `yaml:"grpc-port"`
@@ -34,6 +35,8 @@ type NodeConfig struct {
 	CPU  string `yaml:"cpu"`
 	MEM  string `yaml:"mem"`
 	DISK string `yaml:"disk"`
+	// CloudInit is full cloudinit string
+	CloudInit string
 }
 
 // Arg Argument
