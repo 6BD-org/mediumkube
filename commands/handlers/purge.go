@@ -17,7 +17,7 @@ func (handler PurgeHandler) Handle(args []string) {
 		handler.Help()
 	}
 	config := configurations.Config()
-	nodeManager := services.GetNodeManager(config.Backend)
+	nodeManager := services.GetDomainManager(config.Backend)
 	for _, node := range args[1:] {
 		nodeManager.Purge(node)
 	}

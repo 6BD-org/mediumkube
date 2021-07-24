@@ -17,7 +17,7 @@ func (handler StartHandler) Handle(args []string) {
 		return
 	}
 
-	manager := services.GetNodeManager(config.Backend)
+	manager := services.GetDomainManager(config.Backend)
 	if len(args) < 2 {
 		handler.Help()
 		return

@@ -34,9 +34,7 @@ func readTemplate(templatePath string) string {
 	return string(data)
 }
 
-// Render render the template using config object
-func Render(templatePath string, outPath string) {
-	config := configurations.Config()
+func DoRender(templatePath string, outPath string, config *common.OverallConfig) {
 	templateStr := readTemplate(templatePath)
 
 	tmpl, err := template.New("cloudInit").Funcs(sprig.TxtFuncMap()).Parse(templateStr)
@@ -48,6 +46,12 @@ func Render(templatePath string, outPath string) {
 	utils.CheckErr(err)
 	err = tmpl.Execute(out, config)
 	utils.CheckErr(err)
+}
+
+// Render render the template using config object
+func Render(templatePath string, outPath string) {
+	config := configurations.Config()
+	DoRender(templatePath, outPath, config)
 }
 
 // RenderHandler This handles render command

@@ -111,7 +111,7 @@ func doLeaseSync(config *common.OverallConfig) {
 
 func doDomainSync(config *common.OverallConfig) {
 
-	nodeManager := services.GetNodeManager(config.Backend)
+	nodeManager := services.GetDomainManager(config.Backend)
 	domains, err := nodeManager.List()
 	if err != nil {
 		klog.Error("Failed to list local domains", err)

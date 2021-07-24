@@ -14,13 +14,18 @@ const (
 
 var overallConfig *common.OverallConfig = nil
 
+func LoadConfigFromFile(configPath string) *common.OverallConfig {
+	configStr := utils.ReadByte(configPath)
+	_config := &common.OverallConfig{}
+	err := yaml.Unmarshal(configStr, _config)
+	utils.CheckErr(err)
+	return _config
+}
+
 // InitConfig initialize configuration context
 func InitConfig() {
 	log.Println("Using configuration file: ", configDir)
-	configStr := utils.ReadByte(configDir)
-	overallConfig = &common.OverallConfig{}
-	err := yaml.Unmarshal(configStr, overallConfig)
-	utils.CheckErr(err)
+	overallConfig = LoadConfigFromFile(configDir)
 }
 
 // Config Get config

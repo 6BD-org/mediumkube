@@ -41,7 +41,7 @@ func (handler JoinHandler) Handle(args []string) {
 
 	// Step 2. Execute that command on node to join
 
-	mpSvc := services.GetNodeManager(configurations.Config().Backend)
+	mpSvc := services.GetDomainManager(configurations.Config().Backend)
 
 	tokenCmd := []string{"kubeadm", "token", "create", "--print-join-command"}
 

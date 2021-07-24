@@ -22,7 +22,7 @@ type MediumKubeServer struct {
 }
 
 func (s *MediumKubeServer) ListDomains(context.Context, *EmptyParam) (*DomainListResp, error) {
-	manager := services.GetNodeManager(s.config.Backend)
+	manager := services.GetDomainManager(s.config.Backend)
 	domainList, err := manager.List()
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (s *MediumKubeServer) ListDomains(context.Context, *EmptyParam) (*DomainLis
 }
 
 func (s *MediumKubeServer) DeployDomain(param *DomainCreationParam, stream DomainSercice_DeployDomainServer) error {
-	manager := services.GetNodeManager(s.config.Backend)
+	manager := services.GetDomainManager(s.config.Backend)
 	var err error
 	dlock.NewEtcdLockManager(s.config).DoWithLock(domainCreationLockType, 5*60*1000*1000*1000, func() {
 		ms := services.GetMeshService()
@@ -78,7 +78,7 @@ func (s *MediumKubeServer) DeployDomain(param *DomainCreationParam, stream Domai
 }
 
 func (s *MediumKubeServer) DeleteDomains(ctx context.Context, param *DomainDeletionParam) (*DomainDeletionResp, error) {
-	manager := services.GetNodeManager(s.config.Backend)
+	manager := services.GetDomainManager(s.config.Backend)
 	for _, domain := range param.Names {
 		manager.Purge(domain)
 	}

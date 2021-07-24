@@ -34,12 +34,12 @@ func (handler ResetHandler) Handle(args []string) {
 
 	cmd := []string{"kubeadm", "reset"}
 
-	services.GetNodeManager(configurations.Config().Backend).AttachAndExec(node, cmd, true)
+	services.GetDomainManager(configurations.Config().Backend).AttachAndExec(node, cmd, true)
 
 	log.Println("Removing custom kube config")
 	config := configurations.Config()
 	rmConfigCmd := []string{"rm", config.VMKubeConfigDir}
-	services.GetNodeManager(configurations.Config().Backend).AttachAndExec(node, rmConfigCmd, true)
+	services.GetDomainManager(configurations.Config().Backend).AttachAndExec(node, rmConfigCmd, true)
 
 }
 

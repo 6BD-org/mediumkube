@@ -31,7 +31,7 @@ func GetMeshService() *MeshService {
 	return meshService
 }
 
-func GetNodeManager(backend string) NodeManager {
+func GetDomainManager(backend string) DomainManager {
 	switch backend {
 	case "libvirt":
 		return libvirtService
