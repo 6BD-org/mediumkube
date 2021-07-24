@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -115,4 +116,21 @@ func TrimPrefixOrDie(file string, prefix string) string {
 	CheckErr(err)
 
 	return strings.TrimPrefix(fileAbs, prefixAbs)
+}
+
+func BinaryExists(executable string) bool {
+	pathVar, ok := os.LookupEnv("PATH")
+	if !ok {
+		return false
+	}
+	paths := strings.Split(pathVar, string(os.PathListSeparator))
+	for _, basePath := range paths {
+		fullPath := path.Join(basePath, executable)
+		_, err := os.Open(fullPath)
+		if err != nil {
+			continue
+		}
+		return true
+	}
+	return false
 }

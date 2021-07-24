@@ -100,3 +100,15 @@ func TestPath(t *testing.T) {
 	fmt.Println(filepath.Base("/"))
 	fmt.Println(filepath.Base(""))
 }
+
+func TestBinaryExist(t *testing.T) {
+	var res bool
+	res = utils.BinaryExists("ls")
+	if !res {
+		t.Fail()
+	}
+	res = utils.BinaryExists("asdasdzxczxcz__ADASD")
+	if res {
+		t.Fail()
+	}
+}
