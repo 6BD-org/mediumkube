@@ -197,5 +197,5 @@ var DomainSercice_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "pkg/daemon/mgrpc/domain.proto",
+	Metadata: "daemon/mgrpc/domain.proto",
 }

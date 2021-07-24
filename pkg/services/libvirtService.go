@@ -135,12 +135,19 @@ func copyAndResizeMedia(src string, tgt string, size string) {
 }
 
 // CreateDomain Create a domain, overwriting disk image
-func (service LibvirtService) CreateDomain(name string, cpu string, memory string, disk string, net string, image string, cloudInitImg string, sinks ...func([]byte) error) {
+func (service LibvirtService) CreateDomain(
+	name string,
+	cpu string,
+	memory string,
+	disk string,
+	net string,
+	image string,
+	cloudInitImg string, tmpl string, sinks ...func([]byte) error) {
 	param := common.NewDomainCreationParam(
 		name, cpu, memory, image, cloudInitImg, net,
 	)
 	xml, err := virtutils.GetDeploymentConfig(
-		param,
+		param, tmpl,
 	)
 	if err != nil {
 		klog.Error(err)
@@ -276,6 +283,7 @@ func (service LibvirtService) Deploy(nodes []common.NodeConfig, image string, si
 			service.config.Bridge.Name,
 			tgtImg,
 			cloudImage,
+			n.Template,
 			sinks...,
 		)
 	}

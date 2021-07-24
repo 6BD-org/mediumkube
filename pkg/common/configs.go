@@ -23,12 +23,6 @@ type Flannel struct {
 	Network    string `yaml:"network"`
 }
 
-// VolumeMount mount host dir int virtual machine dir
-type VolumeMount struct {
-	Host string `yaml:"host"`
-	VM   string `yaml:"vm"`
-}
-
 // NodeConfig Config for each noed. "node" field  in config yaml
 type NodeConfig struct {
 	Name string `yaml:"name"`
@@ -37,6 +31,8 @@ type NodeConfig struct {
 	DISK string `yaml:"disk"`
 	// CloudInit is full cloudinit string
 	CloudInit string
+	// Template is full libvirt template
+	Template string
 }
 
 // Arg Argument
@@ -52,11 +48,13 @@ type KubeInit struct {
 
 // Bridge that establish connections between vms
 type Bridge struct {
-	Name      string `yaml:"name"`
-	Alias     string `yaml:"alias"`
-	Inet      string `yaml:"inet"`
-	Broadcast string `yaml:"broadcast"`
-	Host      string `yaml:"host"` // NIC on host machine
+	Name string `yaml:"name"`
+	Inet string `yaml:"inet"`
+}
+
+type Flavor struct {
+	Name     string `yaml:"name"`
+	Template string `yaml:"template"`
 }
 
 // OverallConfig Over-all configs
@@ -79,6 +77,7 @@ type OverallConfig struct {
 	PrivKeyDir      string   `yaml:"priv-key-dir"`
 	HostPubKeyDir   string   `yaml:"host-pub-key-dir"`
 	HostPrivKeyDir  string   `yaml:"host-priv-key-dir"` // Used for ssh execute
+	Flavors         []Flavor `yaml:"flavors"`
 }
 
 type KVMDomainConfig struct {

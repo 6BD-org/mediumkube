@@ -30,12 +30,13 @@ func (handler DeployHandler) Handle(args []string) {
 
 	config := configurations.Config()
 
-	var name, cpu, mem, disk, cloudinit string
+	var name, cpu, mem, disk, cloudinit, flavor string
 	handler.flagset.StringVar(&name, "name", "", "Name of the domain. Must be cluster-wise unique")
 	handler.flagset.StringVar(&cpu, "cpu", "2", "Number of cpu")
 	handler.flagset.StringVar(&mem, "memory", "2G", "Size of memory")
 	handler.flagset.StringVar(&disk, "disk", "20G", "size of disk")
 	handler.flagset.StringVar(&cloudinit, "cloudinit", config.CloudInit, "Cloud init file")
+	handler.flagset.StringVar(&flavor, "flavor", config.Flavors[0].Name, "Flavor of vm machine")
 	handler.flagset.Parse(args[1:])
 	if Help(handler, args) {
 		handler.Help()
@@ -56,7 +57,14 @@ func (handler DeployHandler) Handle(args []string) {
 			cloudinitStr = make([]byte, 0)
 		}
 	}
-	configs = append(configs, &mgrpc.DomainConfig{Cpu: cpu, Memory: mem, Disk: disk, Name: name, CloudInit: string(cloudinitStr)})
+	configs = append(configs, &mgrpc.DomainConfig{
+		Cpu:       cpu,
+		Memory:    mem,
+		Disk:      disk,
+		Name:      name,
+		CloudInit: string(cloudinitStr),
+		Flavor:    flavor,
+	})
 	// TODO: Handler creation over to scheduler
 	stream, err := client.DeployDomain(context.TODO(),
 		&mgrpc.DomainCreationParam{Config: configs},

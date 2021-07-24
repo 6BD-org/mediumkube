@@ -15,7 +15,6 @@ const (
 // CreateNetBridge from config
 func CreateNetBridge(bridge common.Bridge) error {
 	la := netlink.NewLinkAttrs()
-	la.Alias = bridge.Alias
 	la.Name = bridge.Name
 
 	br := &netlink.Bridge{
