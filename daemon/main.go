@@ -127,7 +127,7 @@ func main() {
 			mesh.StopMesh()
 			dnsMasqProc.Kill()
 			tasks.CleanUpIptables()
-			services.GetNodeManager(config.Backend).Disconnect()
+			services.GetDomainManager(config.Backend).Disconnect()
 			break
 		}
 		if c {

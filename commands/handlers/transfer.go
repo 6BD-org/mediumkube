@@ -37,9 +37,9 @@ func (handler TransferHandler) Handle(args []string) {
 
 	fmt.Println(args, *recursive)
 	if *recursive {
-		services.GetNodeManager(configurations.Config().Backend).TransferR(args[0], args[1])
+		services.GetDomainManager(configurations.Config().Backend).TransferR(args[0], args[1])
 	} else {
-		services.GetNodeManager(configurations.Config().Backend).Transfer(args[0], args[1])
+		services.GetDomainManager(configurations.Config().Backend).Transfer(args[0], args[1])
 	}
 
 }

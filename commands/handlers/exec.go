@@ -30,7 +30,7 @@ func (handler ExecHandler) Handle(args []string) {
 		handler.Help()
 	}
 
-	services.GetNodeManager(configurations.Config().Backend).Exec(args[1], args[2:], true)
+	services.GetDomainManager(configurations.Config().Backend).Exec(args[1], args[2:], true)
 }
 
 func init() {

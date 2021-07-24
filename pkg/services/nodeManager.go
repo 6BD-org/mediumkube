@@ -5,8 +5,8 @@ import (
 	"mediumkube/pkg/models"
 )
 
-// NodeManager manages nodes
-type NodeManager interface {
+// DomainManager manages nodes
+type DomainManager interface {
 	Deploy(nodes []common.NodeConfig, image string, sink ...func([]byte) error)
 	Purge(node string)
 	Start(node string)

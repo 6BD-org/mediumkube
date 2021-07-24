@@ -29,7 +29,7 @@ func (handler ShellHandler) Handle(args []string) {
 		return
 	}
 
-	services.GetNodeManager(configurations.Config().Backend).Shell(args[1])
+	services.GetDomainManager(configurations.Config().Backend).Shell(args[1])
 }
 
 func init() {

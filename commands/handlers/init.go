@@ -54,7 +54,7 @@ func (handler InitHandler) Handle(args []string) {
 
 	kubeInitArgs := overallConfig.KubeInit.Args
 	cmd := initCmd(kubeInitArgs)
-	services.GetNodeManager(overallConfig.Backend).Exec(*node, cmd, true)
+	services.GetDomainManager(overallConfig.Backend).Exec(*node, cmd, true)
 	// TODO: Add post-command to enable kubectl
 
 	log.Printf("Doing post-init configurations")
@@ -66,7 +66,7 @@ func (handler InitHandler) Handle(args []string) {
 	err := os.MkdirAll(utils.GetFileDir(k8s.KubeConfigPath(overallConfig)), os.FileMode(0777))
 	utils.CheckErr(err)
 	log.Println("Transferring kube config")
-	services.GetNodeManager(overallConfig.Backend).Transfer(fmt.Sprintf("%v:%v", *node, overallConfig.VMKubeConfigDir), k8s.KubeConfigPath(overallConfig))
+	services.GetDomainManager(overallConfig.Backend).Transfer(fmt.Sprintf("%v:%v", *node, overallConfig.VMKubeConfigDir), k8s.KubeConfigPath(overallConfig))
 
 }
 
