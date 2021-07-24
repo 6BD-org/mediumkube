@@ -1,4 +1,4 @@
-package commands
+package handlers
 
 // Handler abstract handler.
 type Handler interface {

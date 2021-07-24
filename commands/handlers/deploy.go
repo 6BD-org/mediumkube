@@ -1,11 +1,12 @@
-package commands
+package handlers
 
 import (
 	"context"
 	"flag"
 	"io/ioutil"
+	_client "mediumkube/client"
+	"mediumkube/daemon/mgrpc"
 	"mediumkube/pkg/configurations"
-	"mediumkube/pkg/daemon/mgrpc"
 	"mediumkube/pkg/utils"
 	"os"
 
@@ -45,7 +46,7 @@ func (handler DeployHandler) Handle(args []string) {
 	}
 	// Mediumkube only supports single node currently.
 	// Let scheduler to select node in the future
-	client := mgrpc.NewMediumkubeClientOrDie(config, config.Overlay.Master)
+	client := _client.NewMediumkubeClientOrDie(config, config.Overlay.Master)
 	configs := make([]*mgrpc.DomainConfig, 0)
 	cloudinitStr, err := ioutil.ReadFile(cloudinit)
 	klog.Info("Using cloud init file", cloudinit)

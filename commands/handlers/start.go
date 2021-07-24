@@ -1,4 +1,4 @@
-package commands
+package handlers
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 	"mediumkube/pkg/services"
 )
 
-type StopHandler struct {
+type StartHandler struct {
 }
 
-func (handler StopHandler) Handle(args []string) {
+func (handler StartHandler) Handle(args []string) {
 
 	config := configurations.Config()
 
@@ -24,18 +24,18 @@ func (handler StopHandler) Handle(args []string) {
 	}
 
 	for _, node := range args[1:] {
-		manager.Stop(node)
+		manager.Start(node)
 	}
 }
-func (handler StopHandler) Help() {
-	fmt.Println("stop node1 node2 node3")
+func (handler StartHandler) Help() {
+	fmt.Println("start node1 node2 node3")
 }
 
-func (handler StopHandler) Desc() string {
-	return "Stop virtual machines"
+func (handler StartHandler) Desc() string {
+	return "Start virtual machines"
 }
 
 func init() {
-	name := "stop"
-	CMD[name] = StopHandler{}
+	name := "start"
+	CMD[name] = StartHandler{}
 }
