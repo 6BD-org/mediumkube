@@ -26,3 +26,4 @@
 |overlay.flannel.etcd-prefix|ETCD key prefix allocated for flannel |"/xmbsmdsj.co.uk/network"|
 |overlay.flannel.iface|Interface for flannel|flannel.1|
 |overlay.flannel.backend|flannel backend|vxlan|
+|flavors|Predefined flavors and templates. You are allowed to access templating variables in such templates||
