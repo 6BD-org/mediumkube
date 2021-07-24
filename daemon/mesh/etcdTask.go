@@ -27,7 +27,7 @@ func StartEtcd() *os.Process {
 	master := configurations.Config().Overlay.Master
 	cmd := exec.Command(
 		etcdExecutable,
-		fmt.Sprintf("--listen-client-urls=%s", utils.EtcdEp(master, etcdPort)),
+		fmt.Sprintf("--listen-client-urls=%s", utils.EtcdEp("0.0.0.0", etcdPort)),
 		fmt.Sprintf("--advertise-client-urls=%s", utils.EtcdEp(master, etcdPort)),
 		"--enable-v2=true",
 	)

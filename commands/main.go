@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"mediumkube/pkg/commands"
+	"mediumkube/commands/handlers"
 	"os"
 )
 
@@ -12,7 +12,7 @@ func main() {
 	tmpFlagSet := flag.NewFlagSet("", flag.ExitOnError)
 	tmpFlagSet.Parse(os.Args[1:])
 	// Handle command
-	commands.RootHandler{}.Handle(tmpFlagSet.Args())
+	handlers.RootHandler{}.Handle(tmpFlagSet.Args())
 
 }
 

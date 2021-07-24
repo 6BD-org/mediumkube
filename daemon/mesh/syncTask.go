@@ -65,6 +65,7 @@ func doSync(config *common.OverallConfig) {
 // pushLease push self to etcd lease server
 func pushLease(config *common.OverallConfig) {
 	peer := models.PeerLease{
+		Id:        config.Overlay.Id,
 		Cidr:      config.Overlay.Cidr,
 		Timestamp: time.Now().Unix(),
 		TTL:       leaseTTL,
@@ -84,28 +85,7 @@ func pushLease(config *common.OverallConfig) {
 }
 
 func pullLease(config *common.OverallConfig) ([]models.PeerLease, error) {
-	res := make([]models.PeerLease, 0)
-	kpi := clientv2.NewKeysAPI(etcd.NewClientOrDie())
-	resp, err := kpi.Get(context.TODO(), config.Overlay.LeaseEtcdPrefix, nil)
-	if err != nil {
-		klog.Error(err)
-		return []models.PeerLease{}, err
-	}
-
-	for _, node := range resp.Node.Nodes {
-		payload := models.PeerLease{}
-		if len(node.Value) == 0 {
-			continue
-		}
-		err = json.Unmarshal([]byte(node.Value), &payload)
-		if err != nil {
-
-			klog.Errorf("Fail to marshal payload: %v, err: %v", node.Value, err)
-			continue
-		}
-		res = append(res, payload)
-	}
-	return res, nil
+	return services.GetMeshService().ListLeases()
 }
 
 func doLeaseSync(config *common.OverallConfig) {

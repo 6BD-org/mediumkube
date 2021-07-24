@@ -1,4 +1,4 @@
-package commands
+package handlers
 
 import (
 	"mediumkube/pkg/configurations"

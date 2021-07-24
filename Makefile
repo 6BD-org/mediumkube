@@ -14,10 +14,10 @@ generate:
 	 pkg/daemon/mgrpc/domain.proto
 
 mediumkube:
-	go build -o build/mediumkube main.go
+	go build -o build/mediumkube commands/main.go
 
 mediumkubed:
-	go build -o build/mediumkubed pkg/daemon/main.go
+	go build -o build/mediumkubed daemon/main.go
 
 all: mediumkube mediumkubed
 
