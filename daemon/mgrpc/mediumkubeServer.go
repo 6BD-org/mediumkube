@@ -7,6 +7,7 @@ import (
 	"mediumkube/pkg/common/event"
 	"mediumkube/pkg/dlock"
 	"mediumkube/pkg/services"
+	"mediumkube/pkg/utils"
 	"strings"
 
 	"google.golang.org/protobuf/runtime/protoimpl"
@@ -56,13 +57,15 @@ func (s *MediumKubeServer) DeployDomain(param *DomainCreationParam, stream Domai
 					return
 				}
 			}
-
+			flavorTmpl, err := s.config.Flavor(config.Flavor)
+			utils.CheckErr(err)
 			ncs = append(ncs, common.NodeConfig{
 				CPU:       config.Cpu,
 				MEM:       config.Memory,
 				DISK:      config.Disk,
 				Name:      config.Name,
 				CloudInit: config.CloudInit,
+				Template:  flavorTmpl,
 			})
 		}
 		manager.Deploy(ncs, s.config.Image, sink)

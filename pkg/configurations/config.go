@@ -28,10 +28,17 @@ func InitConfig() {
 	overallConfig = LoadConfigFromFile(configDir)
 }
 
+func EnsureFlavorExistance(config *common.OverallConfig) {
+	if len(config.Flavors) < 1 {
+		panic("Must specify at least one flavor")
+	}
+}
+
 // Config Get config
 func Config() *common.OverallConfig {
 	if overallConfig == nil {
 		InitConfig()
 	}
+	EnsureFlavorExistance(overallConfig)
 	return overallConfig
 }

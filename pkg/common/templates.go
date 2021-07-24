@@ -40,3 +40,12 @@ func (c OverallConfig) NodeDiskImage(node string) string {
 func (c OverallConfig) BridgeName() string {
 	return c.Bridge.Name
 }
+
+func (c OverallConfig) Flavor(flavorName string) (string, error) {
+	for _, f := range c.Flavors {
+		if f.Name == flavorName {
+			return f.Template, nil
+		}
+	}
+	return "", fmt.Errorf("Flavor %s not found", flavorName)
+}

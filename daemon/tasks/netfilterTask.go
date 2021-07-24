@@ -99,24 +99,6 @@ func _dnsOut(bridge common.Bridge, protocol string) []string {
 	}
 }
 
-func _forwardInboundToHost(bridge common.Bridge) []string {
-	return []string{
-		"-i", bridge.Name,
-		"-o", bridge.Host,
-		"-j", "ACCEPT",
-	}
-}
-
-func _forwardOutboundExtablished(bridge common.Bridge) []string {
-	return []string{
-		"-o", bridge.Name,
-		"-i", bridge.Host,
-		"-m", "conntrack",
-		"--ctstate", "ESTABLISHED,RELATED",
-		"-j", "ACCEPT",
-	}
-}
-
 func _in(port int) []string {
 	return []string{
 		"-p", "tcp",
@@ -147,8 +129,6 @@ func ProcessIptables(config *common.OverallConfig) {
 	insertRuleIfNotExists("FORWARD", network.IPModPREP, _forwardRuleOut(bridge)...) // Allow outbound traffic from bridge
 	insertRuleIfNotExists("FORWARD", network.IPModPREP, _forwardRuleIn(bridge)...)  // Allow inbound traffic to bridge
 	insertRuleIfNotExists("FORWARD", network.IPModPREP, _forwardRuleIO(bridge)...)
-	// insertRuleIfNotExists("FORWARD", _forwardInboundToHost(bridge)...)
-	// insertRuleIfNotExists("FORWARD", _forwardOutboundExtablished(bridge)...)
 	insertRuleIfNotExists("FORWARD", network.IPModAPP, _forwardRejectICMPUnreachableIn(bridge)...) // Reject traffic when ICMP unreachable
 	insertRuleIfNotExists("FORWARD", network.IPModAPP, _forwardRejectICMPUnreachableOut(bridge)...)
 	insertRuleIfNotExists("INPUT", network.IPModPREP, _dhcpIn(bridge)...) // Open port for DHCP

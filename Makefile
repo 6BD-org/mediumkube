@@ -11,7 +11,7 @@ generate:
 	--go_opt=paths=source_relative \
 	 --go-grpc_out=. \
 	 --go-grpc_opt=paths=source_relative \
-	 pkg/daemon/mgrpc/domain.proto
+	 daemon/mgrpc/domain.proto
 
 mediumkube:
 	go build -o build/mediumkube commands/main.go
