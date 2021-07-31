@@ -33,10 +33,12 @@ jobs:
         sudo addgroup libvirtd
         sudo usermod -a -G libvirtd $USER
         go mod vendor
+    - name: Install
+      run: make clean install
     - name: Test
       run: make test
     - name: Build
-      run: make all
+      run: make clean all
 
 
 
